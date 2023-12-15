@@ -13,7 +13,7 @@ const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
 
 #[derive(Parser)]
 struct Args {
-    #[arg(long, short, default_value_t = 1)]
+    #[arg(index = 1, default_value_t = 1)]
     amount: u16,
 }
 
