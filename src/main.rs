@@ -1,4 +1,4 @@
-use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
+use argon2::{password_hash::SaltString, Argon2, PasswordHasher, PasswordVerifier};
 use base64::{
     alphabet::STANDARD,
     engine::{general_purpose::NO_PAD, GeneralPurpose},
@@ -29,6 +29,9 @@ fn main() {
         let hash = argon2
             .hash_password(&psk, &salt)
             .expect("could not hash key");
+        assert!(argon2
+            .verify_password(&BASE64.decode(&b64key).expect("invalid base64 hash"), &hash)
+            .is_ok());
         println!("{b64key}\t{hash}");
     }
 }
