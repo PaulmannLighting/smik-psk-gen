@@ -1,8 +1,19 @@
 [package]
 name = "smik-psk-gen"
+description = "Generate pre-shared keys for the smik gateways"
+categories = ["command-line-utilities"]
+keywords = ["PSK", "key", "smik"]
+authors = ["Richard Neumann <neumann@paulmann.de>"]
+repository = "https://github.com/PaulmannLighting/smik-psk-gen"
+license = "MIT"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+rand_chacha = "0.3.1"
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+clap = { version = "4.4.11", features = ["derive"] }
+argon2 = "0.5.2"
+base64 = "0.21.5"
