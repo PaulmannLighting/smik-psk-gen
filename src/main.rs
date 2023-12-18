@@ -1,19 +1,13 @@
 use argon2::{password_hash::SaltString, Argon2, PasswordHasher, PasswordVerifier};
-use base64::{
-    alphabet::STANDARD,
-    engine::{general_purpose::NO_PAD, GeneralPurpose},
-    Engine,
-};
+use base64::Engine;
 use clap::Parser;
 use log::error;
 use rand_chacha::ChaCha20Rng;
 use rand_core::SeedableRng;
-use smik_psk_gen::generate_psk;
+use smik_psk_gen::{generate_psk, BASE64};
 use std::fs::read_to_string;
 use std::path::PathBuf;
 use std::process::exit;
-
-const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
 
 #[derive(Parser)]
 struct Args {

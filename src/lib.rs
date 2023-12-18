@@ -1,5 +1,10 @@
+use base64::{
+    alphabet::STANDARD,
+    engine::{general_purpose::NO_PAD, GeneralPurpose},
+};
 use rand_core::{CryptoRng, RngCore};
 
+pub const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
 const KEY_SIZE: usize = 12;
 
 /// Generate a new PSK.
