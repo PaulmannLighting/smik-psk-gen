@@ -9,7 +9,7 @@ use std::fs::read_to_string;
 use std::path::PathBuf;
 use std::process::exit;
 
-pub const KEY_SIZE: usize = 12;
+pub const DEFAULT_KEY_SIZE: usize = 12;
 
 #[derive(Parser)]
 struct Args {
@@ -17,7 +17,7 @@ struct Args {
     mac_list: PathBuf,
     #[arg(long, short, default_value_t = '\t', help = "column separator")]
     sep: char,
-    #[arg(long, short, default_value_t = 12, help = "key size in bytes")]
+    #[arg(long, short, default_value_t = DEFAULT_KEY_SIZE, help = "key size in bytes")]
     key_size: usize,
 }
 
