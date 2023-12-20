@@ -18,12 +18,12 @@ impl Keygen {
     }
 
     #[must_use]
-    pub fn generate_psk<R>(&self, csprng: &mut R) -> Vec<u8>
+    pub fn generate_psk<R>(&self, csprng: &mut R) -> Box<[u8]>
     where
         R: CryptoRng + RngCore,
     {
         let mut result = vec![0; self.size];
         csprng.fill_bytes(&mut result);
-        result
+        result.into_boxed_slice()
     }
 }

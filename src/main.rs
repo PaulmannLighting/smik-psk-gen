@@ -34,10 +34,10 @@ fn main() {
 
     for mac_address in mac_addresses.split_whitespace() {
         let psk = keygen.generate_psk(&mut csprng);
-        let b64key = BASE64.encode(psk.as_slice());
+        let b64key = BASE64.encode(&psk);
         let salt = SaltString::generate(&mut csprng);
         let hash = argon2
-            .hash_password(psk.as_slice(), &salt)
+            .hash_password(&psk, &salt)
             .expect("could not hash key");
         assert!(argon2
             .verify_password(&BASE64.decode(&b64key).expect("invalid base64 hash"), &hash)
