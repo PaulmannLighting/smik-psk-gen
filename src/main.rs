@@ -4,7 +4,7 @@ use clap::Parser;
 use log::error;
 use rand_chacha::ChaCha20Rng;
 use rand_core::SeedableRng;
-use smik_psk_gen::{generate_psk, BASE64};
+use smik_psk_gen::{generate_psk, BASE64, KEY_SIZE};
 use std::fs::read_to_string;
 use std::path::PathBuf;
 use std::process::exit;
@@ -28,7 +28,7 @@ fn main() {
     let argon2 = Argon2::default();
 
     for mac_address in mac_addresses.split_whitespace() {
-        let psk = generate_psk(&mut csprng);
+        let psk: [u8; KEY_SIZE] = generate_psk(&mut csprng);
         let b64key = BASE64.encode(psk);
         let salt = SaltString::generate(&mut csprng);
         let hash = argon2
