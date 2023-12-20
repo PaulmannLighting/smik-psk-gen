@@ -4,10 +4,12 @@ use clap::Parser;
 use log::error;
 use rand_chacha::ChaCha20Rng;
 use rand_core::SeedableRng;
-use smik_psk_gen::{generate_psk, BASE64, KEY_SIZE};
+use smik_psk_gen::{Keygen, BASE64};
 use std::fs::read_to_string;
 use std::path::PathBuf;
 use std::process::exit;
+
+pub const KEY_SIZE: usize = 12;
 
 #[derive(Parser)]
 struct Args {
@@ -15,6 +17,8 @@ struct Args {
     mac_list: PathBuf,
     #[arg(long, short, default_value_t = '\t', help = "column separator")]
     sep: char,
+    #[arg(long, short, default_value_t = 12, help = "key size in bytes")]
+    key_size: usize,
 }
 
 fn main() {
@@ -25,14 +29,15 @@ fn main() {
         exit(1)
     });
     let mut csprng = ChaCha20Rng::from_entropy();
+    let keygen = Keygen::new(args.key_size);
     let argon2 = Argon2::default();
 
     for mac_address in mac_addresses.split_whitespace() {
-        let psk: [u8; KEY_SIZE] = generate_psk(&mut csprng);
-        let b64key = BASE64.encode(psk);
+        let psk = keygen.generate_psk(&mut csprng);
+        let b64key = BASE64.encode(psk.as_slice());
         let salt = SaltString::generate(&mut csprng);
         let hash = argon2
-            .hash_password(&psk, &salt)
+            .hash_password(psk.as_slice(), &salt)
             .expect("could not hash key");
         assert!(argon2
             .verify_password(&BASE64.decode(&b64key).expect("invalid base64 hash"), &hash)
