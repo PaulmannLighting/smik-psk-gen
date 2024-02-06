@@ -1,12 +1,11 @@
 use argon2::{password_hash::SaltString, Argon2, PasswordHasher, PasswordVerifier};
 use base64::Engine;
 use clap::Parser;
+use clap_stdin::FileOrStdin;
 use log::error;
 use rand_chacha::ChaCha20Rng;
 use rand_core::SeedableRng;
 use smik_psk_gen::{Keygen, BASE64};
-use std::fs::read_to_string;
-use std::path::PathBuf;
 use std::process::exit;
 
 pub const DEFAULT_KEY_SIZE: usize = 12;
@@ -14,7 +13,7 @@ pub const DEFAULT_KEY_SIZE: usize = 12;
 #[derive(Parser)]
 struct Args {
     #[arg(index = 1, help = "file of MAC addresses")]
-    mac_list: PathBuf,
+    mac_list: FileOrStdin,
     #[arg(long, short, default_value_t = '\t', help = "column separator")]
     sep: char,
     #[arg(long, short, default_value_t = DEFAULT_KEY_SIZE, help = "key size in bytes")]
@@ -24,7 +23,7 @@ struct Args {
 fn main() {
     env_logger::init();
     let args = Args::parse();
-    let mac_addresses = read_to_string(args.mac_list).unwrap_or_else(|error| {
+    let mac_addresses = args.mac_list.contents().unwrap_or_else(|error| {
         error!("{error}");
         exit(1)
     });
