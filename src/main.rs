@@ -2,7 +2,7 @@ use base64::Engine;
 use clap::Parser;
 use clap_stdin::FileOrStdin;
 use log::error;
-use smik_psk_gen::{Keygen, PasswordHasher, BASE64};
+use smik_psk_gen::{Keygen, PwHasher, BASE64};
 use std::process::exit;
 
 pub const DEFAULT_KEY_SIZE: usize = 12;
@@ -25,7 +25,7 @@ fn main() {
         exit(1)
     });
     let mut keygen = Keygen::default();
-    let mut pw_hasher = PasswordHasher::default();
+    let mut pw_hasher = PwHasher::default();
 
     for mac_address in mac_addresses.split_whitespace() {
         let psk = keygen.generate_psk(args.key_size);

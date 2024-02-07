@@ -1,11 +1,10 @@
 use argon2::{
-    password_hash::Result, password_hash::SaltString, Argon2,
-    PasswordHasher as Argon2PasswordHasher, PasswordVerifier,
+    password_hash::Result, password_hash::SaltString, Argon2, PasswordHasher, PasswordVerifier,
 };
 use rand_chacha::ChaCha20Rng;
 use rand_core::{CryptoRngCore, SeedableRng};
 
-pub struct PasswordHasher<'key, R>
+pub struct PwHasher<'key, R>
 where
     R: CryptoRngCore,
 {
@@ -13,7 +12,7 @@ where
     argon2: Argon2<'key>,
 }
 
-impl<R> PasswordHasher<'_, R>
+impl<R> PwHasher<'_, R>
 where
     R: CryptoRngCore,
 {
@@ -36,7 +35,7 @@ where
     }
 }
 
-impl Default for PasswordHasher<'_, ChaCha20Rng> {
+impl Default for PwHasher<'_, ChaCha20Rng> {
     fn default() -> Self {
         Self {
             csprng: ChaCha20Rng::from_entropy(),
