@@ -21,9 +21,8 @@ where
     /// # Errors
     /// Returns an [`argon2::password_hash::Error`] if hashing fails.
     pub fn hash(&mut self, password: &[u8]) -> Result<String> {
-        let salt = SaltString::generate(&mut self.csprng);
-        let hash = self.argon2.hash_password(password, &salt)?;
-        Ok(hash.to_string())
+        let salt = self.salt();
+        Ok(self.argon2.hash_password(password, &salt)?.to_string())
     }
 
     /// Verifies a password.
@@ -32,6 +31,10 @@ where
     /// Returns an [`argon2::password_hash::Error`] if verification fails.
     pub fn verify_password(&mut self, password: &[u8], hash: &str) -> Result<()> {
         self.argon2.verify_password(password, &hash.try_into()?)
+    }
+
+    fn salt(&mut self) -> SaltString {
+        SaltString::generate(&mut self.csprng)
     }
 }
 
