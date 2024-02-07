@@ -1,7 +1,6 @@
 use argon2::{
     password_hash::Result, password_hash::SaltString, Argon2, PasswordHasher, PasswordVerifier,
 };
-use rand_chacha::ChaCha20Rng;
 use rand_core::{CryptoRngCore, SeedableRng};
 
 pub struct PwHasher<'key, R>
@@ -36,10 +35,13 @@ where
     }
 }
 
-impl Default for PwHasher<'_, ChaCha20Rng> {
+impl<R> Default for PwHasher<'_, R>
+where
+    R: CryptoRngCore + SeedableRng,
+{
     fn default() -> Self {
         Self {
-            csprng: ChaCha20Rng::from_entropy(),
+            csprng: R::from_entropy(),
             argon2: Argon2::default(),
         }
     }

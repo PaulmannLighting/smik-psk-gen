@@ -2,6 +2,7 @@ use base64::Engine;
 use clap::Parser;
 use clap_stdin::FileOrStdin;
 use log::error;
+use rand_chacha::ChaCha20Rng;
 use smik_psk_gen::{Keygen, PwHasher, BASE64};
 use std::process::exit;
 
@@ -24,8 +25,8 @@ fn main() {
         error!("{error}");
         exit(1)
     });
-    let mut keygen = Keygen::default();
-    let mut pw_hasher = PwHasher::default();
+    let mut keygen = Keygen::<ChaCha20Rng>::default();
+    let mut pw_hasher = PwHasher::<ChaCha20Rng>::default();
 
     for mac_address in mac_addresses.split_whitespace() {
         let psk = keygen.generate_psk(args.key_size);

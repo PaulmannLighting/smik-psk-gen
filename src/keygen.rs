@@ -1,4 +1,3 @@
-use rand_chacha::ChaCha20Rng;
 use rand_core::{CryptoRngCore, SeedableRng};
 
 #[derive(Debug)]
@@ -29,8 +28,11 @@ where
     }
 }
 
-impl Default for Keygen<ChaCha20Rng> {
+impl<R> Default for Keygen<R>
+where
+    R: CryptoRngCore + SeedableRng,
+{
     fn default() -> Self {
-        Self::new(ChaCha20Rng::from_entropy())
+        Self::new(R::from_entropy())
     }
 }
