@@ -1,29 +1,11 @@
+mod keygen;
+mod password_hasher;
+
 use base64::{
     alphabet::STANDARD,
     engine::{general_purpose::NO_PAD, GeneralPurpose},
 };
-use rand_core::CryptoRngCore;
 
 pub const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
-
-#[derive(Debug)]
-pub struct Keygen {
-    size: usize,
-}
-
-impl Keygen {
-    #[must_use]
-    pub const fn new(size: usize) -> Self {
-        Self { size }
-    }
-
-    #[must_use]
-    pub fn generate_psk<R>(&self, csprng: &mut R) -> Box<[u8]>
-    where
-        R: CryptoRngCore,
-    {
-        let mut result = vec![0; self.size];
-        csprng.fill_bytes(&mut result);
-        result.into_boxed_slice()
-    }
-}
+pub use keygen::Keygen;
+pub use password_hasher::PasswordHasher;
