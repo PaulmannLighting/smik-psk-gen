@@ -1,10 +1,12 @@
+use std::process::exit;
+
 use base64::Engine;
 use clap::Parser;
 use clap_stdin::FileOrStdin;
 use log::error;
 use rand_chacha::ChaCha20Rng;
+
 use smik_psk_gen::{Keygen, PwHasher, BASE64};
-use std::process::exit;
 
 pub const DEFAULT_KEY_SIZE: usize = 12;
 
