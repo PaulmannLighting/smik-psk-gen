@@ -1,9 +1,9 @@
 mod error;
 
 use crate::BASE64;
-use argon2::PasswordVerifier;
 use base64::Engine;
 pub use error::Error;
+use password_hash::PasswordVerifier;
 
 pub trait PasswordVerifierExt: PasswordVerifier {
     /// Verifies a password.

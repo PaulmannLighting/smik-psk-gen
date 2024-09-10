@@ -1,4 +1,4 @@
-use argon2::{password_hash::SaltString, PasswordHasher};
+use password_hash::{PasswordHasher, SaltString};
 use rand_core::CryptoRngCore;
 
 pub struct PwHasher<'a, R, P>
@@ -23,7 +23,7 @@ where
         }
     }
 
-    pub fn hash(self, password: &[u8]) -> argon2::password_hash::Result<String> {
+    pub fn hash(self, password: &[u8]) -> password_hash::Result<String> {
         Ok(self
             .password_hasher
             .hash_password(password, &SaltString::generate(self.csprng))?

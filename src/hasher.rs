@@ -1,6 +1,6 @@
 mod pw_hasher;
 
-use argon2::PasswordHasher;
+use password_hash::PasswordHasher;
 use pw_hasher::PwHasher;
 use rand_core::CryptoRngCore;
 
