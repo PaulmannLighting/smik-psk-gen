@@ -4,8 +4,8 @@ use clap::Parser;
 use clap_stdin::FileOrStdin;
 use log::error;
 use rand_chacha::ChaCha20Rng;
-use rand_core::SeedableRng;
-use smik_psk_gen::{Hasher, Keygen, PasswordVerifierExt, BASE64};
+use rand_core::{RngCore, SeedableRng};
+use smik_psk_gen::{Hasher, PasswordVerifierExt, BASE64};
 use std::process::exit;
 
 pub const DEFAULT_KEY_SIZE: usize = 12;
@@ -31,9 +31,10 @@ fn main() {
     });
     let mut csprng = ChaCha20Rng::from_entropy();
     let argon2 = Argon2::default();
+    let mut psk = vec![0; args.key_size];
 
     for mac_address in mac_addresses.split_whitespace() {
-        let psk = csprng.generate_key(args.key_size);
+        csprng.fill_bytes(&mut psk);
         let b64key = BASE64.encode(&psk);
         let hash = csprng
             .hasher(&argon2)
