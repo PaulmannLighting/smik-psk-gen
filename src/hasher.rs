@@ -4,11 +4,9 @@ use password_hash::PasswordHasher;
 use pw_hasher::PwHasher;
 use rand_core::CryptoRngCore;
 
+/// A trait for hashing passwords.
 pub trait Hasher: CryptoRngCore + Sized {
-    /// Hash a password.
-    ///
-    /// # Errors
-    /// Returns an [`password_hash::Error`] if hashing fails.
+    /// Create a password hasher.
     fn hasher<'a, P>(&'a mut self, password_hasher: &'a P) -> PwHasher<'a, Self, P>
     where
         P: PasswordHasher;

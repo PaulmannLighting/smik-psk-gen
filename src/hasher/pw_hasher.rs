@@ -23,6 +23,7 @@ where
         }
     }
 
+    /// Hash a password.
     pub fn hash(self, password: &[u8]) -> password_hash::Result<String> {
         Ok(self
             .password_hasher

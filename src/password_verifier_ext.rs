@@ -5,6 +5,7 @@ use base64::Engine;
 pub use error::Error;
 use password_hash::PasswordVerifier;
 
+/// Extends [`PasswordVerifier`] with a method to verify a password from a base64-encoded key.
 pub trait PasswordVerifierExt: PasswordVerifier {
     /// Verifies a password.
     ///

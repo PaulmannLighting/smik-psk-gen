@@ -1,5 +1,6 @@
 use rand_core::CryptoRngCore;
 
+/// A trait for generating pre-shared keys.
 pub trait Keygen: CryptoRngCore {
     /// Generate a pre-shared key of a given size.
     fn generate_key(&mut self, size: usize) -> Box<[u8]>;
