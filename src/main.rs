@@ -1,12 +1,12 @@
-use std::process::exit;
-
+use argon2::Argon2;
 use base64::Engine;
 use clap::Parser;
 use clap_stdin::FileOrStdin;
 use log::error;
 use rand_chacha::ChaCha20Rng;
 use rand_core::SeedableRng;
-use smik_psk_gen::{Keygen, PwHasher, BASE64};
+use smik_psk_gen::{Argon2Hasher, Keygen, PasswordVerifierExt, BASE64};
+use std::process::exit;
 
 pub const DEFAULT_KEY_SIZE: usize = 12;
 
@@ -29,18 +29,18 @@ fn main() {
         error!("{error}");
         exit(1)
     });
-    let mut keygen = ChaCha20Rng::from_entropy();
-    let mut pw_hasher = PwHasher::<ChaCha20Rng>::default();
+    let mut csprng = ChaCha20Rng::from_entropy();
+    let argon2 = Argon2::default();
 
     for mac_address in mac_addresses.split_whitespace() {
-        let psk = keygen.generate_psk(args.key_size);
+        let psk = csprng.generate_key(args.key_size);
         let b64key = BASE64.encode(&psk);
-        let hash = pw_hasher.hash(&psk).expect("could not hash key");
+        let hash = csprng
+            .hash_argon2(&argon2, &psk)
+            .expect("could not hash key");
 
         if args.validate {
-            assert!(pw_hasher
-                .verify_password(&BASE64.decode(&b64key).expect("invalid base64 hash"), &hash)
-                .is_ok());
+            assert!(argon2.verify_base64(&b64key, &hash).is_ok());
         }
 
         println!("{mac_address}\t{b64key}");
