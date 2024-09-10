@@ -5,7 +5,7 @@ use clap::Parser;
 use clap_stdin::FileOrStdin;
 use log::error;
 use rand_chacha::ChaCha20Rng;
-
+use rand_core::SeedableRng;
 use smik_psk_gen::{Keygen, PwHasher, BASE64};
 
 pub const DEFAULT_KEY_SIZE: usize = 12;
@@ -27,7 +27,7 @@ fn main() {
         error!("{error}");
         exit(1)
     });
-    let mut keygen = Keygen::<ChaCha20Rng>::default();
+    let mut keygen = ChaCha20Rng::from_entropy();
     let mut pw_hasher = PwHasher::<ChaCha20Rng>::default();
 
     for mac_address in mac_addresses.split_whitespace() {

@@ -1,38 +1,17 @@
-use rand_core::{CryptoRngCore, SeedableRng};
+use rand_core::CryptoRngCore;
 
-#[derive(Debug)]
-pub struct Keygen<R>
-where
-    R: CryptoRngCore,
-{
-    csprng: R,
+pub trait Keygen: CryptoRngCore {
+    fn generate_psk(&mut self, size: usize) -> Box<[u8]>;
 }
 
-impl<R> Keygen<R>
+impl<T> Keygen for T
 where
-    R: CryptoRngCore,
+    T: CryptoRngCore,
 {
     #[must_use]
-    pub const fn new(csprng: R) -> Self {
-        Self { csprng }
-    }
-
-    #[must_use]
-    pub fn generate_psk(&mut self, size: usize) -> Box<[u8]>
-    where
-        R: CryptoRngCore,
-    {
+    fn generate_psk(&mut self, size: usize) -> Box<[u8]> {
         let mut result = vec![0; size];
-        self.csprng.fill_bytes(&mut result);
+        self.fill_bytes(&mut result);
         result.into_boxed_slice()
-    }
-}
-
-impl<R> Default for Keygen<R>
-where
-    R: CryptoRngCore + SeedableRng,
-{
-    fn default() -> Self {
-        Self::new(R::from_entropy())
     }
 }
