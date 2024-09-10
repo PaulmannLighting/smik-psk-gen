@@ -9,7 +9,7 @@ pub trait PasswordVerifierExt: PasswordVerifier {
     /// Verifies a password.
     ///
     /// # Errors
-    /// Returns an [`argon2::password_hash::Error`] if verification fails.
+    /// Returns an [`password_hash::Error`] if verification fails.
     fn verify_base64(&self, b64key: &str, hash: &str) -> Result<(), Error>;
 }
 

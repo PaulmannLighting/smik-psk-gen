@@ -8,7 +8,7 @@ pub trait Hasher: CryptoRngCore + Sized {
     /// Hash a password.
     ///
     /// # Errors
-    /// Returns an [`argon2::password_hash::Error`] if hashing fails.
+    /// Returns an [`password_hash::Error`] if hashing fails.
     fn hasher<'a, P>(&'a mut self, password_hasher: &'a P) -> PwHasher<'a, Self, P>
     where
         P: PasswordHasher;
