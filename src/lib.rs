@@ -1,4 +1,4 @@
-mod argon2_hasher;
+mod hasher;
 mod keygen;
 mod password_verifier_ext;
 
@@ -8,6 +8,6 @@ use base64::{
 };
 
 pub const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
-pub use argon2_hasher::Argon2Hasher;
+pub use hasher::Hasher;
 pub use keygen::Keygen;
 pub use password_verifier_ext::{Error, PasswordVerifierExt};
