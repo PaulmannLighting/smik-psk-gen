@@ -18,6 +18,8 @@ struct Args {
     sep: char,
     #[arg(long, short, default_value_t = DEFAULT_KEY_SIZE, help = "key size in bytes")]
     key_size: usize,
+    #[arg(long, short, help = "validate generated keys")]
+    validate: bool,
 }
 
 fn main() {
@@ -34,9 +36,13 @@ fn main() {
         let psk = keygen.generate_psk(args.key_size);
         let b64key = BASE64.encode(&psk);
         let hash = pw_hasher.hash(&psk).expect("could not hash key");
-        assert!(pw_hasher
-            .verify_password(&BASE64.decode(&b64key).expect("invalid base64 hash"), &hash)
-            .is_ok());
+
+        if args.validate {
+            assert!(pw_hasher
+                .verify_password(&BASE64.decode(&b64key).expect("invalid base64 hash"), &hash)
+                .is_ok());
+        }
+
         println!("{mac_address}\t{b64key}");
         eprintln!("{mac_address}\t{hash}");
     }
