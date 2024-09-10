@@ -30,7 +30,7 @@ where
     ///
     /// # Errors
     /// Returns an [`argon2::password_hash::Error`] if verification fails.
-    pub fn verify_password(&mut self, password: &[u8], hash: &str) -> Result<()> {
+    pub fn verify_password(&self, password: &[u8], hash: &str) -> Result<()> {
         self.argon2.verify_password(password, &hash.try_into()?)
     }
 }
