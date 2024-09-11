@@ -1,8 +1,9 @@
 use crate::Error;
-use base64::alphabet::STANDARD;
-use base64::engine::general_purpose::NO_PAD;
-use base64::engine::GeneralPurpose;
-use base64::Engine;
+use base64::{
+    alphabet::STANDARD,
+    engine::{general_purpose::NO_PAD, GeneralPurpose},
+    Engine,
+};
 use password_hash::{PasswordHasher, PasswordVerifier, SaltString};
 use rand_core::{CryptoRngCore, SeedableRng};
 
