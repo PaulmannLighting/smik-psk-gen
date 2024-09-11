@@ -27,19 +27,16 @@ fn main() {
         error!("{error}");
         exit(1)
     });
-    let mut password_hash_generator = PasswordHashGenerator::<ChaCha20Rng, Argon2>::default();
-    let mut psk = vec![0; args.key_size];
+    let mut password_hash_generator =
+        PasswordHashGenerator::<ChaCha20Rng, Argon2>::default_with_size(args.key_size);
 
     for mac_address in mac_addresses.split_whitespace() {
-        let b64key = password_hash_generator.generate(&mut psk);
-        let hash = password_hash_generator
-            .hash(&psk)
-            .expect("could not hash key");
+        let (b64key, hash) = password_hash_generator
+            .generate()
+            .expect("Failed to generate key");
 
         if args.validate {
-            assert!(password_hash_generator
-                .verify_base64(&b64key, &hash)
-                .is_ok());
+            assert!(password_hash_generator.verify(&b64key, &hash).is_ok());
         }
 
         println!("{mac_address}\t{b64key}");

@@ -10,6 +10,7 @@ where
 {
     csprng: R,
     hasher: H,
+    buffer: Vec<u8>,
 }
 
 impl<R, H> PasswordHashGenerator<R, H>
@@ -18,44 +19,45 @@ where
     H: PasswordHasher,
 {
     #[must_use]
-    pub const fn new(csprng: R, hasher: H) -> Self {
-        Self { csprng, hasher }
+    pub fn new(csprng: R, hasher: H, size: usize) -> Self {
+        Self {
+            csprng,
+            hasher,
+            buffer: vec![0; size],
+        }
     }
 
     /// Generates a random password and writes it into the buffer returning its BASE64 encoding.
-    pub fn generate(&mut self, buffer: &mut [u8]) -> String {
-        self.csprng.fill_bytes(buffer);
-        BASE64.encode(buffer)
-    }
-
-    /// Hashes a password.
     ///
     /// # Errors
     /// Returns a [`password_hash::Error`] if the password hash could not be generated.
-    pub fn hash(&mut self, password: &[u8]) -> password_hash::Result<String> {
+    pub fn generate(&mut self) -> password_hash::Result<(String, String)> {
+        self.csprng.fill_bytes(&mut self.buffer);
+        let b64 = BASE64.encode(&self.buffer);
         let salt = SaltString::generate(&mut self.csprng);
-        self.hasher
-            .hash_password(password, &salt)
-            .map(|hash| hash.to_string())
+        let hash = self.hasher.hash_password(&self.buffer, &salt)?;
+        self.buffer.clear();
+        Ok((b64, hash.to_string()))
     }
 
     /// Verify a password hash.
     ///
     /// # Errors
     /// Returns an [`Error`] if the password hash could not be verified.
-    pub fn verify_base64(&self, b64key: &str, hash: &str) -> Result<(), Error> {
+    pub fn verify(&self, b64key: &str, hash: &str) -> Result<(), Error> {
         Ok(self
             .hasher
             .verify_password(&BASE64.decode(b64key)?, &hash.try_into()?)?)
     }
 }
 
-impl<R, H> Default for PasswordHashGenerator<R, H>
+impl<R, H> PasswordHashGenerator<R, H>
 where
     R: CryptoRngCore + SeedableRng,
     H: PasswordHasher + Default,
 {
-    fn default() -> Self {
-        Self::new(R::from_entropy(), H::default())
+    #[must_use]
+    pub fn default_with_size(size: usize) -> Self {
+        Self::new(R::from_entropy(), H::default(), size)
     }
 }
