@@ -31,10 +31,11 @@ where
     ///
     /// # Errors
     /// Returns a [`password_hash::Error`] if the password hash could not be generated.
-    pub fn generate(&mut self) -> password_hash::Result<(String, String)> {
+    pub fn generate(&mut self) -> Result<(String, String), Error> {
         let b64 = self.generate_psk();
         let hash = self.hash_psk()?;
         self.reset();
+        self.verify(&b64, &hash)?;
         Ok((b64, hash))
     }
 
@@ -61,7 +62,7 @@ where
     ///
     /// # Errors
     /// Returns an [`Error`] if the password hash could not be verified.
-    pub fn verify(&self, b64key: &str, hash: &str) -> Result<(), Error> {
+    fn verify(&self, b64key: &str, hash: &str) -> Result<(), Error> {
         Ok(self
             .hasher
             .verify_password(&BASE64.decode(b64key)?, &hash.try_into()?)?)
@@ -76,5 +77,17 @@ where
     #[must_use]
     pub fn default_with_size(size: usize) -> Self {
         Self::new(R::from_entropy(), H::default(), size)
+    }
+}
+
+impl<R, H> Iterator for PasswordHashGenerator<R, H>
+where
+    R: CryptoRngCore,
+    H: PasswordHasher,
+{
+    type Item = (String, String);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.generate().ok()
     }
 }

@@ -16,8 +16,6 @@ struct Args {
     sep: char,
     #[arg(long, short, default_value_t = DEFAULT_KEY_SIZE, help = "key size in bytes")]
     key_size: usize,
-    #[arg(long, short, help = "validate generated keys")]
-    validate: bool,
 }
 
 fn main() {
@@ -27,18 +25,11 @@ fn main() {
         error!("{error}");
         exit(1)
     });
-    let mut password_hash_generator =
-        PasswordHashGenerator::<ChaCha20Rng, Argon2>::default_with_size(args.key_size);
 
-    for mac_address in mac_addresses.split_whitespace() {
-        let (b64key, hash) = password_hash_generator
-            .generate()
-            .expect("Failed to generate key");
-
-        if args.validate {
-            assert!(password_hash_generator.verify(&b64key, &hash).is_ok());
-        }
-
+    for (mac_address, (b64key, hash)) in mac_addresses
+        .split_whitespace()
+        .zip(PasswordHashGenerator::<ChaCha20Rng, Argon2>::default_with_size(args.key_size))
+    {
         println!("{mac_address}\t{b64key}");
         eprintln!("{mac_address}\t{hash}");
     }
