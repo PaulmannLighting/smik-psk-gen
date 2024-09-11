@@ -8,27 +8,27 @@ use rand_core::{CryptoRngCore, SeedableRng};
 
 const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
 
-pub struct PasswordHashGenerator<R, H>
+pub struct PasswordHashGenerator<const KEY_SIZE: usize, R, H>
 where
     R: CryptoRngCore,
     H: PasswordHasher,
 {
     csprng: R,
     hasher: H,
-    buffer: Vec<u8>,
+    buffer: [u8; KEY_SIZE],
 }
 
-impl<R, H> PasswordHashGenerator<R, H>
+impl<const KEY_SIZE: usize, R, H> PasswordHashGenerator<KEY_SIZE, R, H>
 where
     R: CryptoRngCore,
     H: PasswordHasher,
 {
     #[must_use]
-    pub fn new(csprng: R, hasher: H, size: usize) -> Self {
+    pub const fn new(csprng: R, hasher: H) -> Self {
         Self {
             csprng,
             hasher,
-            buffer: vec![0; size],
+            buffer: [0; KEY_SIZE],
         }
     }
 
@@ -47,7 +47,7 @@ where
     /// Generate a new pre-shared key.
     fn generate_psk(&mut self) -> String {
         self.csprng.fill_bytes(&mut self.buffer);
-        BASE64.encode(&self.buffer)
+        BASE64.encode(self.buffer)
     }
 
     /// Hash the pre-shared key.
@@ -60,7 +60,7 @@ where
 
     /// Reset the buffer to all zeros.
     fn reset(&mut self) {
-        self.buffer.iter_mut().for_each(|byte| *byte = 0);
+        self.buffer.fill(0);
     }
 
     /// Verify a password hash.
@@ -74,18 +74,17 @@ where
     }
 }
 
-impl<R, H> PasswordHashGenerator<R, H>
+impl<const KEY_SIZE: usize, R, H> Default for PasswordHashGenerator<KEY_SIZE, R, H>
 where
     R: CryptoRngCore + SeedableRng,
     H: PasswordHasher + Default,
 {
-    #[must_use]
-    pub fn default_with_size(size: usize) -> Self {
-        Self::new(R::from_entropy(), H::default(), size)
+    fn default() -> Self {
+        Self::new(R::from_entropy(), H::default())
     }
 }
 
-impl<R, H> Iterator for PasswordHashGenerator<R, H>
+impl<const KEY_SIZE: usize, R, H> Iterator for PasswordHashGenerator<KEY_SIZE, R, H>
 where
     R: CryptoRngCore,
     H: PasswordHasher,

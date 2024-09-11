@@ -3,10 +3,8 @@ use clap::Parser;
 use clap_stdin::FileOrStdin;
 use log::error;
 use rand_chacha::ChaCha20Rng;
-use smik_psk_gen::PasswordHashGenerator;
+use smik_psk_gen::{PasswordHashGenerator, DEFAULT_KEY_SIZE};
 use std::process::exit;
-
-const DEFAULT_KEY_SIZE: usize = 12;
 
 #[derive(Parser)]
 struct Args {
@@ -14,8 +12,6 @@ struct Args {
     mac_list: FileOrStdin,
     #[arg(long, short, default_value_t = '\t', help = "column separator")]
     sep: char,
-    #[arg(long, short, default_value_t = DEFAULT_KEY_SIZE, help = "key size in bytes")]
-    key_size: usize,
 }
 
 fn main() {
@@ -28,7 +24,7 @@ fn main() {
 
     for (mac_address, (b64key, hash)) in mac_addresses
         .split_whitespace()
-        .zip(PasswordHashGenerator::<ChaCha20Rng, Argon2>::default_with_size(args.key_size))
+        .zip(PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2>::default())
     {
         println!("{mac_address}\t{b64key}");
         eprintln!("{mac_address}\t{hash}");
