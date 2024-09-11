@@ -5,7 +5,7 @@ use clap_stdin::FileOrStdin;
 use log::error;
 use rand_chacha::ChaCha20Rng;
 use rand_core::{RngCore, SeedableRng};
-use smik_psk_gen::{Hasher, PasswordVerifierExt, BASE64};
+use smik_psk_gen::{PasswordVerifierExt, SaltGenerator, SaltStringExt, BASE64};
 use std::process::exit;
 
 pub const DEFAULT_KEY_SIZE: usize = 12;
@@ -37,8 +37,8 @@ fn main() {
         csprng.fill_bytes(&mut psk);
         let b64key = BASE64.encode(&psk);
         let hash = csprng
-            .hasher(&argon2)
-            .hash(&psk)
+            .generate_salt()
+            .hash(&psk, &argon2)
             .expect("could not hash key");
 
         if args.validate {
