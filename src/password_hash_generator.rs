@@ -36,7 +36,7 @@ where
         let b64 = BASE64.encode(&self.buffer);
         let salt = SaltString::generate(&mut self.csprng);
         let hash = self.hasher.hash_password(&self.buffer, &salt)?;
-        self.buffer.clear();
+        self.buffer.iter_mut().for_each(|byte| *byte = 0);
         Ok((b64, hash.to_string()))
     }
 
