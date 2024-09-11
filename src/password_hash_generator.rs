@@ -32,12 +32,29 @@ where
     /// # Errors
     /// Returns a [`password_hash::Error`] if the password hash could not be generated.
     pub fn generate(&mut self) -> password_hash::Result<(String, String)> {
+        let b64 = self.generate_psk();
+        let hash = self.hash_psk()?;
+        self.reset();
+        Ok((b64, hash))
+    }
+
+    /// Generate a new pre-shared key.
+    fn generate_psk(&mut self) -> String {
         self.csprng.fill_bytes(&mut self.buffer);
-        let b64 = BASE64.encode(&self.buffer);
+        BASE64.encode(&self.buffer)
+    }
+
+    /// Hash the pre-shared key.
+    fn hash_psk(&mut self) -> password_hash::Result<String> {
         let salt = SaltString::generate(&mut self.csprng);
-        let hash = self.hasher.hash_password(&self.buffer, &salt)?;
+        self.hasher
+            .hash_password(&self.buffer, &salt)
+            .map(|hash| hash.to_string())
+    }
+
+    /// Reset the buffer to all zeros.
+    fn reset(&mut self) {
         self.buffer.iter_mut().for_each(|byte| *byte = 0);
-        Ok((b64, hash.to_string()))
     }
 
     /// Verify a password hash.
