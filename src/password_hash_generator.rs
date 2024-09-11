@@ -1,7 +1,12 @@
-use crate::{Error, BASE64};
+use crate::Error;
+use base64::alphabet::STANDARD;
+use base64::engine::general_purpose::NO_PAD;
+use base64::engine::GeneralPurpose;
 use base64::Engine;
 use password_hash::{PasswordHasher, PasswordVerifier, SaltString};
 use rand_core::{CryptoRngCore, SeedableRng};
+
+const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
 
 pub struct PasswordHashGenerator<R, H>
 where

@@ -6,7 +6,7 @@ use rand_chacha::ChaCha20Rng;
 use smik_psk_gen::PasswordHashGenerator;
 use std::process::exit;
 
-pub const DEFAULT_KEY_SIZE: usize = 12;
+const DEFAULT_KEY_SIZE: usize = 12;
 
 #[derive(Parser)]
 struct Args {
