@@ -1,12 +1,20 @@
 //! Generate a PSK for each MAC address in a list.
 
+use std::process::exit;
+
 use argon2::Argon2;
 use clap::Parser;
 use clap_stdin::FileOrStdin;
 use log::error;
 use rand_chacha::ChaCha20Rng;
-use smik_psk_gen::{PasswordHashGenerator, DEFAULT_KEY_SIZE};
-use std::process::exit;
+
+pub use error::Error;
+pub use password_hash_generator::PasswordHashGenerator;
+
+mod error;
+mod password_hash_generator;
+
+const DEFAULT_KEY_SIZE: usize = 12;
 
 #[derive(Parser)]
 struct Args {
