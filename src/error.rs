@@ -1,8 +1,11 @@
 use std::fmt::Display;
 
+/// An error that can occur when generating a password hash.
 #[derive(Debug, Eq, PartialEq)]
 pub enum Error {
+    /// An error that can occur when hashing a password.
     PasswordHash(password_hash::Error),
+    /// An error that can occur when decoding a BASE64 string.
     Base64(base64::DecodeError),
 }
 

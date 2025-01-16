@@ -24,9 +24,14 @@ fn main() {
         exit(1)
     });
 
-    for (mac_address, (b64key, hash)) in mac_addresses
-        .split_whitespace()
-        .zip(PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2>::default())
+    for (mac_address, (b64key, hash)) in
+        mac_addresses
+            .split_whitespace()
+            .zip(PasswordHashGenerator::<
+                DEFAULT_KEY_SIZE,
+                ChaCha20Rng,
+                Argon2<'_>,
+            >::default())
     {
         println!("{mac_address}\t{b64key}");
         eprintln!("{mac_address}\t{hash}");
