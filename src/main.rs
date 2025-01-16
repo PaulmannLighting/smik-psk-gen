@@ -1,3 +1,5 @@
+//! Generate a PSK for each MAC address in a list.
+
 use argon2::Argon2;
 use clap::Parser;
 use clap_stdin::FileOrStdin;
