@@ -10,11 +10,7 @@ use rand_core::{CryptoRngCore, SeedableRng};
 const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
 
 /// A password hash generator.
-pub struct PasswordHashGenerator<const KEY_SIZE: usize, R, H>
-where
-    R: CryptoRngCore,
-    H: PasswordHasher,
-{
+pub struct PasswordHashGenerator<const KEY_SIZE: usize, R, H> {
     csprng: R,
     hasher: H,
     buffer: [u8; KEY_SIZE],
