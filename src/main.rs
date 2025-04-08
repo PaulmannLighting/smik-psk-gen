@@ -13,6 +13,7 @@ pub use password_hash_generator::PasswordHashGenerator;
 
 mod error;
 mod password_hash_generator;
+mod psk;
 
 const DEFAULT_KEY_SIZE: usize = 12;
 
@@ -32,16 +33,15 @@ fn main() {
         exit(1)
     });
 
-    for (mac_address, (b64key, hash)) in
-        mac_addresses
-            .split_whitespace()
-            .zip(PasswordHashGenerator::<
-                DEFAULT_KEY_SIZE,
-                ChaCha20Rng,
-                Argon2<'_>,
-            >::default())
+    for (mac_address, psk) in mac_addresses
+        .split_whitespace()
+        .zip(PasswordHashGenerator::<
+            DEFAULT_KEY_SIZE,
+            ChaCha20Rng,
+            Argon2<'_>,
+        >::default())
     {
-        println!("{mac_address}\t{b64key}");
-        eprintln!("{mac_address}\t{hash}");
+        println!("{mac_address}\t{}", psk.plaintext());
+        eprintln!("{mac_address}\t{}", psk.hash());
     }
 }

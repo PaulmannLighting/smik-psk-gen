@@ -1,3 +1,4 @@
+use crate::psk::Psk;
 use crate::Error;
 use base64::{
     alphabet::STANDARD,
@@ -35,12 +36,12 @@ where
     ///
     /// # Errors
     /// Returns a [`password_hash::Error`] if the password hash could not be generated.
-    pub fn generate(&mut self) -> Result<(String, String), Error> {
+    pub fn generate(&mut self) -> Result<Psk, Error> {
         let b64 = self.generate_psk();
         let hash = self.hash_psk()?;
         self.reset();
         self.verify(&b64, &hash)?;
-        Ok((b64, hash))
+        Ok(Psk::new(b64, hash))
     }
 
     /// Generate a new pre-shared key.
@@ -88,7 +89,7 @@ where
     R: CryptoRngCore,
     H: PasswordHasher,
 {
-    type Item = (String, String);
+    type Item = Psk;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.generate().ok()
