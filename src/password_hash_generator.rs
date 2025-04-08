@@ -1,5 +1,3 @@
-use crate::psk::Psk;
-use crate::Error;
 use base64::{
     alphabet::STANDARD,
     engine::{general_purpose::NO_PAD, GeneralPurpose},
@@ -7,6 +5,9 @@ use base64::{
 };
 use password_hash::{PasswordHasher, PasswordVerifier, SaltString};
 use rand_core::{CryptoRngCore, SeedableRng};
+
+use crate::psk::Psk;
+use crate::Error;
 
 const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
 
