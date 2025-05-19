@@ -15,7 +15,7 @@ mod error;
 mod password_hash_generator;
 mod psk;
 
-const DEFAULT_KEY_SIZE: usize = 12;
+const DEFAULT_KEY_SIZE: usize = 14; // 112 bits are mandatory as per EN 18031.
 
 #[derive(Parser)]
 struct Args {
