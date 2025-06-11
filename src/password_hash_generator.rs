@@ -43,8 +43,18 @@ where
         let b64 = self.generate_psk();
         let hash = self.hash_psk()?;
         self.reset();
-        self.verify(&b64, &hash)?;
         Ok(Psk::new(b64, hash))
+    }
+
+    /// Verify a password hash.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`Error`] if the password hash could not be verified.
+    pub fn verify(&self, psk: &Psk) -> Result<(), Error> {
+        Ok(self
+            .hasher
+            .verify_password(&BASE64.decode(psk.base64())?, &psk.hash().try_into()?)?)
     }
 
     /// Generate a new pre-shared key.
@@ -64,17 +74,6 @@ where
     /// Reset the buffer to all zeros.
     fn reset(&mut self) {
         self.buffer.fill(0);
-    }
-
-    /// Verify a password hash.
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`Error`] if the password hash could not be verified.
-    fn verify(&self, b64key: &str, hash: &str) -> Result<(), Error> {
-        Ok(self
-            .hasher
-            .verify_password(&BASE64.decode(b64key)?, &hash.try_into()?)?)
     }
 }
 
@@ -96,6 +95,13 @@ where
     type Item = Psk;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.generate().inspect_err(|error| error!("{error}")).ok()
+        let psk = self
+            .generate()
+            .inspect_err(|error| error!("Error generating PSK: {error}"))
+            .ok()?;
+        self.verify(&psk)
+            .inspect_err(|error| error!("Error validating PSK: {error}"))
+            .ok()?;
+        Some(psk)
     }
 }
