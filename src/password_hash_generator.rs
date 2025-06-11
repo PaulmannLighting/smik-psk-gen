@@ -37,6 +37,7 @@ where
     /// Generates a random password and writes it into the buffer returning its BASE64 encoding.
     ///
     /// # Errors
+    ///
     /// Returns a [`password_hash::Error`] if the password hash could not be generated.
     pub fn generate(&mut self) -> Result<Psk, Error> {
         let b64 = self.generate_psk();
@@ -68,6 +69,7 @@ where
     /// Verify a password hash.
     ///
     /// # Errors
+    ///
     /// Returns an [`Error`] if the password hash could not be verified.
     fn verify(&self, b64key: &str, hash: &str) -> Result<(), Error> {
         Ok(self
