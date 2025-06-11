@@ -41,7 +41,7 @@ fn main() {
             Argon2<'_>,
         >::default())
     {
-        println!("{mac_address}\t{}", psk.plaintext());
+        println!("{mac_address}\t{}", psk.base64());
         eprintln!("{mac_address}\t{}", psk.hash());
     }
 }

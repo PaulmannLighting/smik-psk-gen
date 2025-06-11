@@ -1,18 +1,19 @@
+/// Pre-shared Key (PSK) consisting of the base64-encoded plain text and the hash.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Psk {
-    plaintext: String,
+    base64: String,
     hash: String,
 }
 
 impl Psk {
     /// Creates a new `Psk` instance.
-    pub const fn new(plaintext: String, hash: String) -> Self {
-        Self { plaintext, hash }
+    pub(crate) const fn new(base64: String, hash: String) -> Self {
+        Self { base64, hash }
     }
 
     /// Returns the plaintext password.
-    pub fn plaintext(&self) -> &str {
-        self.plaintext.as_str()
+    pub fn base64(&self) -> &str {
+        self.base64.as_str()
     }
 
     /// Returns the hashed password.
