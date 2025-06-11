@@ -3,6 +3,10 @@
 use std::process::exit;
 
 use argon2::Argon2;
+use base64::{
+    alphabet::STANDARD,
+    engine::{general_purpose::NO_PAD, GeneralPurpose},
+};
 use clap::Parser;
 use clap_stdin::FileOrStdin;
 use log::error;
@@ -15,6 +19,7 @@ mod error;
 mod password_hash_generator;
 mod psk;
 
+const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
 const DEFAULT_KEY_SIZE: usize = 14; // 112 bits are mandatory as per EN 18031.
 
 #[derive(Parser)]
