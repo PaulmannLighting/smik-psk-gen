@@ -28,10 +28,13 @@ struct Args {
 fn main() {
     env_logger::init();
     let args = Args::parse();
-    let mac_addresses = args.mac_list.contents().unwrap_or_else(|error| {
-        error!("{error}");
+    let Ok(mac_addresses) = args
+        .mac_list
+        .contents()
+        .inspect_err(|error| error!("{error}"))
+    else {
         exit(1)
-    });
+    };
 
     for (mac_address, psk) in mac_addresses
         .split_whitespace()
