@@ -12,11 +12,11 @@ impl Psk {
 
     /// Returns the plaintext password.
     pub fn plaintext(&self) -> &str {
-        &self.plaintext
+        self.plaintext.as_str()
     }
 
     /// Returns the hashed password.
     pub fn hash(&self) -> &str {
-        &self.hash
+        self.hash.as_str()
     }
 }
