@@ -3,6 +3,7 @@ use base64::{
     engine::{general_purpose::NO_PAD, GeneralPurpose},
     Engine,
 };
+use log::error;
 use password_hash::{PasswordHasher, PasswordVerifier, SaltString};
 use rand_core::{CryptoRngCore, SeedableRng};
 
@@ -93,6 +94,6 @@ where
     type Item = Psk;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.generate().ok()
+        self.generate().inspect_err(|error| error!("{error}")).ok()
     }
 }
