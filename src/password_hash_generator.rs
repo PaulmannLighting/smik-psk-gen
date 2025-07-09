@@ -1,7 +1,7 @@
 use base64::Engine;
 use log::error;
-use password_hash::{PasswordHasher, PasswordVerifier, SaltString};
-use rand_core::{CryptoRngCore, SeedableRng};
+use password_hash::{rand_core::CryptoRng, PasswordHasher, PasswordVerifier, SaltString};
+use rand_core::SeedableRng;
 
 use crate::psk::Psk;
 use crate::{Error, BASE64};
@@ -14,7 +14,7 @@ pub struct PasswordHashGenerator<const SIZE: usize, R, H> {
 
 impl<const SIZE: usize, R, H> PasswordHashGenerator<SIZE, R, H>
 where
-    R: CryptoRngCore,
+    R: CryptoRng,
     H: PasswordHasher,
 {
     /// Create a new [`PasswordHashGenerator`] with a CSPRNG and a password hasher.
@@ -47,7 +47,7 @@ where
     ///
     /// Returns a [`password_hash::Error`] if the hashing fails.
     pub fn hash(&mut self, key: &[u8]) -> password_hash::Result<String> {
-        let salt = SaltString::generate(&mut self.csprng);
+        let salt = SaltString::from_rng(&mut self.csprng);
         self.hasher
             .hash_password(key, &salt)
             .map(|hash| hash.to_string())
@@ -56,17 +56,17 @@ where
 
 impl<const SIZE: usize, R, H> Default for PasswordHashGenerator<SIZE, R, H>
 where
-    R: CryptoRngCore + SeedableRng,
+    R: CryptoRng + SeedableRng,
     H: PasswordHasher + Default,
 {
     fn default() -> Self {
-        Self::new(R::from_entropy(), H::default())
+        Self::new(R::from_os_rng(), H::default())
     }
 }
 
 impl<const SIZE: usize, R, H> Iterator for PasswordHashGenerator<SIZE, R, H>
 where
-    R: CryptoRngCore,
+    R: CryptoRng,
     H: PasswordHasher,
 {
     type Item = Psk;
