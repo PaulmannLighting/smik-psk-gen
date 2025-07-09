@@ -12,12 +12,12 @@ impl Psk {
     }
 
     /// Returns the plaintext password.
-    pub fn base64(&self) -> &str {
+    pub const fn base64(&self) -> &str {
         self.base64.as_str()
     }
 
     /// Returns the hashed password.
-    pub fn hash(&self) -> &str {
+    pub const fn hash(&self) -> &str {
         self.hash.as_str()
     }
 }
