@@ -1,6 +1,6 @@
 //! Generate a PSK for each MAC address in a list.
 
-use std::process::exit;
+use std::process::{exit, ExitCode};
 
 use argon2::Argon2;
 use base64::{
@@ -30,7 +30,7 @@ struct Args {
     sep: char,
 }
 
-fn main() {
+fn main() -> ExitCode {
     env_logger::init();
     let args = Args::parse();
     let Ok(mac_addresses) = args
@@ -38,7 +38,7 @@ fn main() {
         .contents()
         .inspect_err(|error| error!("{error}"))
     else {
-        exit(1)
+        return ExitCode::FAILURE;
     };
 
     for (mac_address, psk) in mac_addresses
@@ -52,4 +52,6 @@ fn main() {
         println!("{mac_address}\t{}", psk.base64());
         eprintln!("{mac_address}\t{}", psk.hash());
     }
+
+    ExitCode::SUCCESS
 }
