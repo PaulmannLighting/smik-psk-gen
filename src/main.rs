@@ -1,6 +1,6 @@
 //! Generate a PSK for each MAC address in a list.
 
-use std::process::{exit, ExitCode};
+use std::process::ExitCode;
 
 use argon2::Argon2;
 use base64::{
