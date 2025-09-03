@@ -26,6 +26,8 @@ struct Args {
     mac_list: FileOrStdin,
     #[arg(long, short, default_value_t = '\t', help = "column separator")]
     sep: char,
+    #[arg(long, short, help = "print plain text PSK and hash in one single line")]
+    inline: bool,
 }
 
 fn main() -> ExitCode {
@@ -47,8 +49,18 @@ fn main() -> ExitCode {
             Argon2<'_>,
         >::default())
     {
-        println!("{mac_address}\t{}", psk.base64());
-        eprintln!("{mac_address}\t{}", psk.hash());
+        if args.inline {
+            println!(
+                "{mac_address}{}{}{}{}",
+                args.sep,
+                psk.base64(),
+                args.sep,
+                psk.hash()
+            );
+        } else {
+            println!("{mac_address}\t{}", psk.base64());
+            eprintln!("{mac_address}\t{}", psk.hash());
+        }
     }
 
     ExitCode::SUCCESS
