@@ -72,12 +72,12 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         let key = self.generate();
-        let base64 = BASE64.encode(key);
-        let hash = self
-            .hash(&key)
-            .inspect_err(|error| error!("Error hashing key: {error}"))
-            .ok()?;
-        let psk = Psk::new(base64, hash);
+        let psk = Psk::new(
+            BASE64.encode(key),
+            self.hash(&key)
+                .inspect_err(|error| error!("Error hashing key: {error}"))
+                .ok()?,
+        );
         self.verify(&psk)
             .inspect_err(|error| error!("Error validating PSK: {error}"))
             .ok()?;
