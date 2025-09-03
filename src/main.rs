@@ -58,8 +58,8 @@ fn main() -> ExitCode {
                 psk.hash()
             );
         } else {
-            println!("{mac_address}\t{}", psk.base64());
-            eprintln!("{mac_address}\t{}", psk.hash());
+            println!("{mac_address}{}{}", args.sep, psk.base64());
+            eprintln!("{mac_address}{}{}", args.sep, psk.hash());
         }
     }
 
