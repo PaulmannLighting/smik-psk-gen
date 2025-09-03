@@ -16,7 +16,7 @@ publish = false
 argon2 = { version = "0.6.0-rc.0", features = ["std"] }
 base64 = "0.22"
 clap = { version = "4.5", features = ["derive"] }
-clap-stdin = "0.6"
+clap-stdin = "0.7"
 env_logger = "0.11"
 log = "0.4"
 password-hash = "0.6.0-rc.1"
