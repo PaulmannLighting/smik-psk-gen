@@ -1,13 +1,15 @@
+use password_hash::PasswordHashString;
+
 /// Pre-shared Key (PSK) consisting of the base64-encoded plain text and the hash.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Psk {
     base64: String,
-    hash: String,
+    hash: PasswordHashString,
 }
 
 impl Psk {
     /// Creates a new `Psk` instance.
-    pub(crate) const fn new(base64: String, hash: String) -> Self {
+    pub(crate) const fn new(base64: String, hash: PasswordHashString) -> Self {
         Self { base64, hash }
     }
 
@@ -17,7 +19,7 @@ impl Psk {
     }
 
     /// Returns the hashed password.
-    pub const fn hash(&self) -> &str {
-        self.hash.as_str()
+    pub const fn hash(&self) -> &PasswordHashString {
+        &self.hash
     }
 }

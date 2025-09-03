@@ -1,7 +1,7 @@
 use base64::Engine;
 use log::error;
 use password_hash::rand_core::CryptoRng;
-use password_hash::{PasswordHasher, PasswordVerifier, SaltString};
+use password_hash::{PasswordHashString, PasswordHasher, PasswordVerifier, SaltString};
 use rand_core::SeedableRng;
 
 use crate::psk::Psk;
@@ -39,7 +39,7 @@ where
     pub fn verify(&self, psk: &Psk) -> Result<(), Error> {
         Ok(self
             .hasher
-            .verify_password(&BASE64.decode(psk.base64())?, &psk.hash().try_into()?)?)
+            .verify_password(&BASE64.decode(psk.base64())?, &psk.hash().password_hash())?)
     }
 
     /// Hash the pre-shared key.
@@ -47,11 +47,9 @@ where
     /// # Errors
     ///
     /// Returns a [`password_hash::Error`] if the hashing fails.
-    pub fn hash(&mut self, key: &[u8]) -> password_hash::Result<String> {
+    pub fn hash(&mut self, key: &[u8]) -> password_hash::Result<PasswordHashString> {
         let salt = SaltString::from_rng(&mut self.csprng);
-        self.hasher
-            .hash_password(key, &salt)
-            .map(|hash| hash.to_string())
+        self.hasher.hash_password(key, &salt).map(Into::into)
     }
 }
 
