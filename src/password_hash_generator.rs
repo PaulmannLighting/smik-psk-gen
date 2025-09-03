@@ -1,6 +1,7 @@
 use base64::Engine;
 use log::error;
-use password_hash::{rand_core::CryptoRng, PasswordHasher, PasswordVerifier, SaltString};
+use password_hash::rand_core::CryptoRng;
+use password_hash::{PasswordHasher, PasswordVerifier, SaltString};
 use rand_core::SeedableRng;
 
 use crate::psk::Psk;

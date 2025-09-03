@@ -3,17 +3,15 @@
 use std::process::ExitCode;
 
 use argon2::Argon2;
-use base64::{
-    alphabet::STANDARD,
-    engine::{general_purpose::NO_PAD, GeneralPurpose},
-};
+use base64::alphabet::STANDARD;
+use base64::engine::general_purpose::NO_PAD;
+use base64::engine::GeneralPurpose;
 use clap::Parser;
 use clap_stdin::FileOrStdin;
-use log::error;
-use rand_chacha::ChaCha20Rng;
-
 pub use error::Error;
+use log::error;
 pub use password_hash_generator::PasswordHashGenerator;
+use rand_chacha::ChaCha20Rng;
 
 mod error;
 mod password_hash_generator;
