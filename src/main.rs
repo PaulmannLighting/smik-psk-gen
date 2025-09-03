@@ -8,9 +8,9 @@ use base64::engine::general_purpose::NO_PAD;
 use base64::engine::GeneralPurpose;
 use clap::Parser;
 use clap_stdin::FileOrStdin;
-pub use error::Error;
+use error::Error;
 use log::error;
-pub use password_hash_generator::PasswordHashGenerator;
+use password_hash_generator::PasswordHashGenerator;
 use rand_chacha::ChaCha20Rng;
 
 mod error;
