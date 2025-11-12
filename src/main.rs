@@ -6,12 +6,13 @@ use argon2::Argon2;
 use base64::alphabet::STANDARD;
 use base64::engine::general_purpose::NO_PAD;
 use base64::engine::GeneralPurpose;
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use clap_stdin::FileOrStdin;
-use error::Error;
 use log::error;
-use password_hash_generator::PasswordHashGenerator;
 use rand_chacha::ChaCha20Rng;
+
+use self::error::Error;
+use self::password_hash_generator::PasswordHashGenerator;
 
 mod error;
 mod password_hash_generator;
@@ -22,22 +23,42 @@ const DEFAULT_KEY_SIZE: usize = 14; // 112 bits are mandatory as per EN 18031.
 
 #[derive(Parser)]
 struct Args {
-    #[arg(index = 1, help = "file of MAC addresses")]
-    mac_list: FileOrStdin,
-    #[arg(long, short, default_value_t = '\t', help = "column separator")]
+    #[clap(subcommand)]
+    target: Target,
+    #[arg(long, short, default_value_t = '\t', help = "Column separator")]
     sep: char,
-    #[arg(long, short, help = "print plain text PSK and hash in one single line")]
+    #[arg(long, short, help = "Print plain text PSK and hash in one single line")]
     inline: bool,
+}
+
+#[derive(Subcommand)]
+enum Target {
+    /// Generate PSKs for each MAC address in the list
+    List {
+        #[clap(help = "File containing MAC addresses, one per line. Use '-' or omit for stdin.")]
+        mac_list: FileOrStdin,
+    },
+    /// Generate a specified amount of PSKs
+    Amount {
+        #[clap(help = "Number of PSKs to generate.")]
+        amount: usize,
+    },
 }
 
 fn main() -> ExitCode {
     env_logger::init();
     let args = Args::parse();
-    let Ok(mac_addresses) = args
-        .mac_list
-        .contents()
-        .inspect_err(|error| error!("{error}"))
-    else {
+    let sep = args.sep;
+    let inline = args.inline;
+
+    match args.target {
+        Target::List { mac_list } => generate_list(mac_list, sep, inline),
+        Target::Amount { amount } => generate_amount(amount, sep, inline),
+    }
+}
+
+fn generate_list(mac_list: FileOrStdin, sep: char, inline: bool) -> ExitCode {
+    let Ok(mac_addresses) = mac_list.contents().inspect_err(|error| error!("{error}")) else {
         return ExitCode::FAILURE;
     };
 
@@ -49,17 +70,29 @@ fn main() -> ExitCode {
             Argon2<'_>,
         >::default())
     {
-        if args.inline {
-            println!(
-                "{mac_address}{}{}{}{}",
-                args.sep,
-                psk.base64(),
-                args.sep,
-                psk.hash()
-            );
+        if inline {
+            println!("{mac_address}{sep}{}{sep}{}", psk.base64(), psk.hash());
         } else {
-            println!("{mac_address}{}{}", args.sep, psk.base64());
-            eprintln!("{mac_address}{}{}", args.sep, psk.hash());
+            println!("{mac_address}{sep}{}", psk.base64());
+            eprintln!("{mac_address}{sep}{}", psk.hash());
+        }
+    }
+
+    ExitCode::SUCCESS
+}
+
+fn generate_amount(amount: usize, sep: char, inline: bool) -> ExitCode {
+    for (_, psk) in (0..amount).zip(PasswordHashGenerator::<
+        DEFAULT_KEY_SIZE,
+        ChaCha20Rng,
+        Argon2<'_>,
+    >::default())
+    {
+        if inline {
+            println!("{}{sep}{}", psk.base64(), psk.hash());
+        } else {
+            println!("{}", psk.base64());
+            eprintln!("{}", psk.hash());
         }
     }
 
