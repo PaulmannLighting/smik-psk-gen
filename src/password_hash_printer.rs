@@ -35,7 +35,7 @@ where
     R: CryptoRng,
     H: PasswordHasher,
 {
-    /// Generate PSKs for each MAC address in the list.
+    /// Generate PSKs for each MAC address in a list separated by whitespace.
     pub fn generate_list(&mut self, mac_list: FileOrStdin) -> ExitCode {
         let Ok(mac_addresses) = mac_list.contents().inspect_err(|error| error!("{error}")) else {
             return ExitCode::FAILURE;
