@@ -27,11 +27,27 @@ const DEFAULT_KEY_SIZE: usize = 14; // 112 bits are mandatory as per EN 18031.
 #[derive(Parser)]
 struct Args {
     #[clap(subcommand)]
-    target: Target,
-    #[arg(long, short, default_value_t = '\t', help = "Column separator")]
-    sep: char,
-    #[arg(long, short, help = "Print plain text PSK and hash in one single line")]
-    inline: bool,
+    action: Action,
+}
+
+#[derive(Subcommand)]
+enum Action {
+    /// Generate PSKs.
+    Generate {
+        #[clap(subcommand)]
+        target: Target,
+        #[arg(long, short, default_value_t = '\t', help = "Column separator")]
+        sep: char,
+        #[arg(long, short, help = "Print plain text PSK and hash in one single line")]
+        inline: bool,
+    },
+    /// Validate the generated PSKs
+    Validate {
+        #[clap(help = "The base64-encoded PSK to validate.")]
+        psk: String,
+        #[clap(help = "The Argon2 hash.")]
+        hash: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -46,34 +62,31 @@ enum Target {
         #[clap(help = "Number of PSKs to generate.")]
         amount: usize,
     },
-    /// Validate the generated PSKs
-    Validate {
-        #[clap(help = "The base64-encoded PSK to validate.")]
-        psk: String,
-        #[clap(help = "The Argon2 hash.")]
-        hash: String,
-    },
 }
 
 fn main() -> ExitCode {
     env_logger::init();
     let args = Args::parse();
-    let sep = args.sep;
-    let inline = args.inline;
 
-    match args.target {
-        Target::List { mac_list } => PasswordHashPrinter::new(
-            PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::default(),
+    match args.action {
+        Action::Generate {
+            target,
             sep,
             inline,
-        )
-        .generate_list(mac_list),
-        Target::Amount { amount } => PasswordHashPrinter::new(
-            PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::default(),
-            sep,
-            inline,
-        )
-        .generate_amount(amount),
-        Target::Validate { psk, hash } => Argon2::default().validate(psk, &hash),
+        } => match target {
+            Target::List { mac_list } => PasswordHashPrinter::new(
+                PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::default(),
+                sep,
+                inline,
+            )
+            .generate_list(mac_list),
+            Target::Amount { amount } => PasswordHashPrinter::new(
+                PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::default(),
+                sep,
+                inline,
+            )
+            .generate_amount(amount),
+        },
+        Action::Validate { psk, hash } => Argon2::default().validate(psk, &hash),
     }
 }
