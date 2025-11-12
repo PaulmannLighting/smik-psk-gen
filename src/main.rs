@@ -6,19 +6,20 @@ use argon2::Argon2;
 use base64::alphabet::STANDARD;
 use base64::engine::general_purpose::NO_PAD;
 use base64::engine::GeneralPurpose;
-use base64::Engine;
 use clap::{Parser, Subcommand};
 use clap_stdin::FileOrStdin;
-use log::{error, info};
-use password_hash::{PasswordHash, PasswordVerifier};
 use rand_chacha::ChaCha20Rng;
 
 use self::error::Error;
 use self::password_hash_generator::PasswordHashGenerator;
+use crate::password_hash_printer::PasswordHashPrinter;
+use crate::validator::Validator;
 
 mod error;
 mod password_hash_generator;
+mod password_hash_printer;
 mod psk;
+mod validator;
 
 const BASE64: GeneralPurpose = GeneralPurpose::new(&STANDARD, NO_PAD);
 const DEFAULT_KEY_SIZE: usize = 14; // 112 bits are mandatory as per EN 18031.
@@ -61,79 +62,18 @@ fn main() -> ExitCode {
     let inline = args.inline;
 
     match args.target {
-        Target::List { mac_list } => generate_list(mac_list, sep, inline),
-        Target::Amount { amount } => generate_amount(amount, sep, inline),
-        Target::Validate { psk, hash } => validate(psk, &hash),
-    }
-}
-
-fn generate_list(mac_list: FileOrStdin, sep: char, inline: bool) -> ExitCode {
-    let Ok(mac_addresses) = mac_list.contents().inspect_err(|error| error!("{error}")) else {
-        return ExitCode::FAILURE;
-    };
-
-    for (mac_address, psk) in mac_addresses
-        .split_whitespace()
-        .zip(PasswordHashGenerator::<
-            DEFAULT_KEY_SIZE,
-            ChaCha20Rng,
-            Argon2<'_>,
-        >::default())
-    {
-        if inline {
-            println!("{mac_address}{sep}{}{sep}{}", psk.base64(), psk.hash());
-        } else {
-            println!("{mac_address}{sep}{}", psk.base64());
-            eprintln!("{mac_address}{sep}{}", psk.hash());
-        }
-    }
-
-    ExitCode::SUCCESS
-}
-
-fn generate_amount(amount: usize, sep: char, inline: bool) -> ExitCode {
-    for (_, psk) in (0..amount).zip(PasswordHashGenerator::<
-        DEFAULT_KEY_SIZE,
-        ChaCha20Rng,
-        Argon2<'_>,
-    >::default())
-    {
-        if inline {
-            println!("{}{sep}{}", psk.base64(), psk.hash());
-        } else {
-            println!("{}", psk.base64());
-            eprintln!("{}", psk.hash());
-        }
-    }
-
-    ExitCode::SUCCESS
-}
-
-fn validate(psk: String, hash: &str) -> ExitCode {
-    validate_raw(
-        &match BASE64.decode(psk) {
-            Ok(psk) => psk,
-            Err(error) => {
-                error!("Error decoding PSK: {error}");
-                return ExitCode::FAILURE;
-            }
-        },
-        &match PasswordHash::new(hash) {
-            Ok(hash) => hash,
-            Err(error) => {
-                error!("Error parsing password hash: {error}");
-                return ExitCode::FAILURE;
-            }
-        },
-    )
-}
-
-fn validate_raw(psk: &[u8], hash: &PasswordHash<'_>) -> ExitCode {
-    if let Err(error) = Argon2::default().verify_password(psk, hash) {
-        error!("Password verification failed: {error}");
-        ExitCode::FAILURE
-    } else {
-        info!("Password verification succeeded.");
-        ExitCode::SUCCESS
+        Target::List { mac_list } => PasswordHashPrinter::new(
+            PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::default(),
+            sep,
+            inline,
+        )
+        .generate_list(mac_list),
+        Target::Amount { amount } => PasswordHashPrinter::new(
+            PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::default(),
+            sep,
+            inline,
+        )
+        .generate_amount(amount),
+        Target::Validate { psk, hash } => Argon2::default().validate(psk, &hash),
     }
 }
