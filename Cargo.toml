@@ -13,15 +13,15 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-argon2 = { version = "0.6.0-rc.0", features = ["std"] }
+argon2 = { version = "0.6.0-rc.2", features = ["std"] }
 base64 = "0.22"
 clap = { version = "4.5", features = ["derive"] }
-clap-stdin = "0.7"
+clap-stdin = "0.8"
 env_logger = "0.11"
 log = "0.4"
-password-hash = "0.6.0-rc.1"
-rand_chacha = "0.9"
-rand_core = { version = "0.9", features = ["os_rng"] }
+password-hash = "0.6.0-rc.2"
+rand_chacha = "0.10.0-rc.1"
+rand = "0.10.0-rc.5"
 
 [lints.rust]
 absolute_paths_not_starting_with_crate = "warn"

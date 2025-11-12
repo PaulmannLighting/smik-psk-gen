@@ -2,7 +2,8 @@ use base64::Engine;
 use log::error;
 use password_hash::rand_core::CryptoRng;
 use password_hash::{PasswordHashString, PasswordHasher, PasswordVerifier, SaltString};
-use rand_core::SeedableRng;
+use rand::rngs::OsRng;
+use rand::SeedableRng;
 
 use crate::psk::Psk;
 use crate::{Error, BASE64};
@@ -59,7 +60,10 @@ where
     H: PasswordHasher + Default,
 {
     fn default() -> Self {
-        Self::new(R::from_os_rng(), H::default())
+        Self::new(
+            R::try_from_rng(&mut OsRng).expect("Creating RNG from OS RNG should always succeed."),
+            H::default(),
+        )
     }
 }
 
