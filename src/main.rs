@@ -12,8 +12,8 @@ use rand_chacha::ChaCha20Rng;
 
 use self::error::Error;
 use self::password_hash_generator::PasswordHashGenerator;
-use crate::password_hash_printer::PasswordHashPrinter;
-use crate::validator::Validator;
+use self::password_hash_printer::PasswordHashPrinter;
+use self::validator::Validator;
 
 mod error;
 mod password_hash_generator;
