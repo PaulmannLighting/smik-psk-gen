@@ -5,8 +5,9 @@ use password_hash::{PasswordHashString, PasswordHasher, PasswordVerifier, SaltSt
 use rand::rngs::OsRng;
 use rand::SeedableRng;
 
+use crate::constants::BASE64;
+use crate::error::Error;
 use crate::psk::Psk;
-use crate::{Error, BASE64};
 
 /// A password hash generator.
 pub struct PasswordHashGenerator<const SIZE: usize, R, H> {

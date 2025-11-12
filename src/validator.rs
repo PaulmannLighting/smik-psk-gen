@@ -4,7 +4,7 @@ use base64::Engine;
 use log::{error, info};
 use password_hash::{PasswordHash, PasswordHasher, PasswordVerifier};
 
-use crate::BASE64;
+use crate::constants::BASE64;
 
 /// Validator trait for validating PSKs against password hashes.
 pub trait Validator {
