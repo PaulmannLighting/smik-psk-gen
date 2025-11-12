@@ -6,7 +6,7 @@ use clap_stdin::FileOrStdin;
 pub enum Target {
     /// Generate PSKs for each MAC address in the list
     List {
-        #[clap(help = "File containing MAC addresses, one per line. Use '-' or omit for stdin.")]
+        #[clap(help = "File containing MAC addresses, separated by whitespace.")]
         mac_list: FileOrStdin,
     },
     /// Generate a specified amount of PSKs

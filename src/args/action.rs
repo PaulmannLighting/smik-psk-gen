@@ -17,12 +17,12 @@ mod target;
 pub enum Action {
     /// Generate PSKs.
     Generate {
-        #[clap(subcommand)]
-        target: Target,
         #[arg(long, short, default_value_t = '\t', help = "Column separator")]
         sep: char,
         #[arg(long, short, help = "Print plain text PSK and hash in one single line")]
         inline: bool,
+        #[clap(subcommand)]
+        target: Target,
     },
     /// Validate the generated PSKs
     Validate {
