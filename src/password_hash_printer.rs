@@ -61,7 +61,7 @@ where
 
     /// Generate a specified amount of PSKs.
     pub fn generate_amount(&mut self, amount: usize) -> ExitCode {
-        for (_, psk) in (0..amount).zip(&mut self.generator) {
+        for psk in (&mut self.generator).take(amount) {
             if self.inline {
                 println!("{}{}{}", psk.base64(), self.sep, psk.hash());
             } else {
