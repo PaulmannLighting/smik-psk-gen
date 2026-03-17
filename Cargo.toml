@@ -6,7 +6,7 @@ keywords = ["PSK", "key", "smik"]
 authors = ["Richard Neumann <neumann@paulmann.de>"]
 repository = "https://github.com/PaulmannLighting/smik-psk-gen"
 license = "MIT"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 publish = false
 
