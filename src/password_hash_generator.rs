@@ -1,5 +1,4 @@
 use base64::Engine;
-use log::error;
 use password_hash::rand_core::CryptoRng;
 use password_hash::{PasswordHashString, PasswordHasher, PasswordVerifier, SaltString};
 use rand::rngs::OsRng;
@@ -73,19 +72,21 @@ where
     R: CryptoRng,
     H: PasswordHasher,
 {
-    type Item = Psk;
+    type Item = Result<Psk, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let key = self.generate();
-        let psk = Psk::new(
-            BASE64.encode(key),
-            self.hash(&key)
-                .inspect_err(|error| error!("Error hashing key: {error}"))
-                .ok()?,
-        );
-        self.verify(&psk)
-            .inspect_err(|error| error!("Error validating PSK: {error}"))
-            .ok()?;
-        Some(psk)
+        let hash = match self.hash(&key) {
+            Ok(hash) => hash,
+            Err(error) => return Some(Err(error.into())),
+        };
+
+        let psk = Psk::new(BASE64.encode(key), hash);
+
+        if let Err(error) = self.verify(&psk) {
+            return Some(Err(error));
+        }
+
+        Some(Ok(psk))
     }
 }

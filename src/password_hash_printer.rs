@@ -2,26 +2,21 @@ use std::process::ExitCode;
 
 use clap_stdin::FileOrStdin;
 use log::error;
-use password_hash::rand_core::CryptoRng;
-use password_hash::PasswordHasher;
 
-use crate::password_hash_generator::PasswordHashGenerator;
+use crate::error::Error;
+use crate::psk::Psk;
 
 /// Print generated passwords.
-pub struct PasswordHashPrinter<const SIZE: usize, R, H> {
-    generator: PasswordHashGenerator<SIZE, R, H>,
+pub struct PasswordHashPrinter<T> {
+    generator: T,
     sep: char,
     inline: bool,
 }
 
-impl<const SIZE: usize, R, H> PasswordHashPrinter<SIZE, R, H> {
+impl<T> PasswordHashPrinter<T> {
     /// Create a new [`PasswordHashPrinter`] with a password hash generator.
     #[must_use]
-    pub const fn new(
-        generator: PasswordHashGenerator<SIZE, R, H>,
-        sep: char,
-        inline: bool,
-    ) -> Self {
+    pub const fn new(generator: T, sep: char, inline: bool) -> Self {
         Self {
             generator,
             sep,
@@ -30,10 +25,9 @@ impl<const SIZE: usize, R, H> PasswordHashPrinter<SIZE, R, H> {
     }
 }
 
-impl<const SIZE: usize, R, H> PasswordHashPrinter<SIZE, R, H>
+impl<T> PasswordHashPrinter<T>
 where
-    R: CryptoRng,
-    H: PasswordHasher,
+    T: Iterator<Item = Result<Psk, Error>>,
 {
     /// Generate PSKs for each MAC address in a list separated by whitespace.
     pub fn generate_list(&mut self, mac_list: FileOrStdin) -> ExitCode {
@@ -41,7 +35,11 @@ where
             return ExitCode::FAILURE;
         };
 
-        for (mac_address, psk) in mac_addresses.split_whitespace().zip(&mut self.generator) {
+        for (mac_address, result) in mac_addresses.split_whitespace().zip(&mut self.generator) {
+            let Ok(psk) = result.inspect_err(|error| error!("{error}")) else {
+                return ExitCode::FAILURE;
+            };
+
             if self.inline {
                 println!(
                     "{mac_address}{}{}{}{}",
@@ -61,7 +59,11 @@ where
 
     /// Generate a specified amount of PSKs.
     pub fn generate_amount(&mut self, amount: usize) -> ExitCode {
-        for psk in (&mut self.generator).take(amount) {
+        for result in (&mut self.generator).take(amount) {
+            let Ok(psk) = result.inspect_err(|error| error!("{error}")) else {
+                return ExitCode::FAILURE;
+            };
+
             if self.inline {
                 println!("{}{}{}", psk.base64(), self.sep, psk.hash());
             } else {

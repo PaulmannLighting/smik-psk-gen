@@ -44,11 +44,9 @@ impl Action {
                 inline,
             } => {
                 let mut printer =
-                    PasswordHashPrinter::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::new(
-                        PasswordHashGenerator::default(),
-                        sep,
-                        inline,
-                    );
+                    PasswordHashPrinter::<
+                        PasswordHashGenerator<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>,
+                    >::new(PasswordHashGenerator::default(), sep, inline);
                 match target {
                     Target::List { mac_list } => printer.generate_list(mac_list),
                     Target::Amount { amount } => printer.generate_amount(amount),
