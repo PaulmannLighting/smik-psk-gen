@@ -67,7 +67,7 @@ where
 
 impl<const SIZE: usize, R, H> Default for PasswordHashGenerator<SIZE, R, H>
 where
-    R: CryptoRng + SeedableRng,
+    R: SeedableRng,
     H: Default,
 {
     fn default() -> Self {
