@@ -2,9 +2,18 @@
 
 use std::process::ExitCode;
 
+use argon2::{Argon2, PasswordHash};
 use clap::Parser;
+use log::error;
+use rand::rngs::SysRng;
+use rand_chacha::ChaCha20Rng;
 
 use self::args::Args;
+use self::constants::DEFAULT_KEY_SIZE;
+use crate::args::{Action, Target};
+use crate::password_hash_generator::PasswordHashGenerator;
+use crate::password_hash_printer::PasswordHashPrinter;
+use crate::psk::Psk;
 
 mod args;
 mod constants;
@@ -15,5 +24,32 @@ mod psk;
 
 fn main() -> ExitCode {
     env_logger::init();
-    Args::parse().run()
+
+    let Ok(phg) = PasswordHashGenerator::<
+        DEFAULT_KEY_SIZE,
+        ChaCha20Rng,
+        Argon2<'_>,
+        PasswordHash,
+    >::try_from_rng(&mut SysRng)
+        .inspect_err(|error| error!("{error}")) else {
+        return ExitCode::FAILURE;
+    };
+
+    match Args::parse().action {
+        Action::Generate {
+            target,
+            sep,
+            inline,
+        } => {
+            let mut printer = PasswordHashPrinter::new(phg, sep, inline);
+            match target {
+                Target::List { mac_list } => printer.generate_list(mac_list),
+                Target::Amount { amount } => printer.generate_amount(amount),
+            }
+        }
+        Action::Validate { psk, hash } => phg
+            .verify(&Psk::new(psk, hash))
+            .inspect_err(|error| eprintln!("{error}"))
+            .map_or(ExitCode::FAILURE, |()| ExitCode::SUCCESS),
+    }
 }

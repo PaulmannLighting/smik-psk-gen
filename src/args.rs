@@ -1,8 +1,6 @@
-use std::process::ExitCode;
-
 use clap::Parser;
 
-use self::action::Action;
+pub use self::action::{Action, Target};
 
 mod action;
 
@@ -10,13 +8,5 @@ mod action;
 #[derive(Parser)]
 pub struct Args {
     #[clap(subcommand)]
-    action: Action,
-}
-
-impl Args {
-    /// Run the specified action.
-    #[must_use]
-    pub fn run(self) -> ExitCode {
-        self.action.run()
-    }
+    pub(crate) action: Action,
 }
