@@ -1,4 +1,5 @@
-use argon2::PasswordHash;
+use std::marker::PhantomData;
+
 use base64::Engine;
 use password_hash::rand_core::TryRng;
 use password_hash::{PasswordHasher, PasswordVerifier};
@@ -9,16 +10,21 @@ use crate::error::Error;
 use crate::psk::Psk;
 
 /// A password hash generator.
-pub struct PasswordHashGenerator<const SIZE: usize, R, H> {
+pub struct PasswordHashGenerator<const SIZE: usize, R, H, P> {
     csprng: R,
     hasher: H,
+    _phantom: PhantomData<P>,
 }
 
-impl<const SIZE: usize, R, H> PasswordHashGenerator<SIZE, R, H> {
+impl<const SIZE: usize, R, H, P> PasswordHashGenerator<SIZE, R, H, P> {
     /// Create a new [`PasswordHashGenerator`] with a CSPRNG and a password hasher.
     #[must_use]
     pub const fn new(csprng: R, hasher: H) -> Self {
-        Self { csprng, hasher }
+        Self {
+            csprng,
+            hasher,
+            _phantom: PhantomData,
+        }
     }
 
     /// Attempt to create a `PasswordHashGenerator` from a random number generator.
@@ -50,9 +56,9 @@ impl<const SIZE: usize, R, H> PasswordHashGenerator<SIZE, R, H> {
     /// # Errors
     ///
     /// Returns an [`Error`] if the password hash could not be verified.
-    pub fn verify(&self, psk: &Psk) -> Result<(), Error>
+    pub fn verify(&self, psk: &Psk<P>) -> Result<(), Error>
     where
-        H: PasswordVerifier<PasswordHash>,
+        H: PasswordVerifier<P>,
     {
         Ok(self
             .hasher
@@ -64,10 +70,10 @@ impl<const SIZE: usize, R, H> PasswordHashGenerator<SIZE, R, H> {
     /// # Errors
     ///
     /// Returns a [`password_hash::Error`] if the hashing fails.
-    pub fn hash(&mut self, key: &[u8]) -> password_hash::Result<PasswordHash>
+    pub fn hash(&mut self, key: &[u8]) -> password_hash::Result<P>
     where
         R: CryptoRng,
-        H: PasswordHasher<PasswordHash>,
+        H: PasswordHasher<P>,
     {
         self.hasher.hash_password_with_rng(&mut self.csprng, key)
     }
@@ -79,12 +85,12 @@ impl<const SIZE: usize, R, H> PasswordHashGenerator<SIZE, R, H> {
 ///
 /// Since PSK generation may fail, this will actually yield a `Result<Psk, Error>`,
 /// which should be handled by the caller.
-impl<const SIZE: usize, R, H> Iterator for PasswordHashGenerator<SIZE, R, H>
+impl<const SIZE: usize, R, H, P> Iterator for PasswordHashGenerator<SIZE, R, H, P>
 where
     R: CryptoRng,
-    H: PasswordHasher<PasswordHash> + PasswordVerifier<PasswordHash>,
+    H: PasswordHasher<P> + PasswordVerifier<P>,
 {
-    type Item = Result<Psk, Error>;
+    type Item = Result<Psk<P>, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let key = self.generate();

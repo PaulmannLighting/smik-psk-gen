@@ -1,15 +1,13 @@
-use argon2::PasswordHash;
-
 /// Pre-shared Key (PSK) consisting of the base64-encoded plain text and the hash.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Psk {
+pub struct Psk<T> {
     base64: String,
-    hash: PasswordHash,
+    hash: T,
 }
 
-impl Psk {
+impl<T> Psk<T> {
     /// Creates a new `Psk` instance.
-    pub(crate) const fn new(base64: String, hash: PasswordHash) -> Self {
+    pub(crate) const fn new(base64: String, hash: T) -> Self {
         Self { base64, hash }
     }
 
@@ -19,7 +17,7 @@ impl Psk {
     }
 
     /// Returns the hashed password.
-    pub const fn hash(&self) -> &PasswordHash {
+    pub const fn hash(&self) -> &T {
         &self.hash
     }
 }

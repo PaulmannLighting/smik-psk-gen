@@ -1,3 +1,5 @@
+use std::fmt::Display;
+use std::marker::PhantomData;
 use std::process::ExitCode;
 
 use clap_stdin::FileOrStdin;
@@ -7,13 +9,14 @@ use crate::error::Error;
 use crate::psk::Psk;
 
 /// Print generated passwords.
-pub struct PasswordHashPrinter<T> {
+pub struct PasswordHashPrinter<T, P> {
     generator: T,
     sep: char,
     inline: bool,
+    _phantom: PhantomData<P>,
 }
 
-impl<T> PasswordHashPrinter<T> {
+impl<T, P> PasswordHashPrinter<T, P> {
     /// Create a new [`PasswordHashPrinter`] with a password hash generator.
     #[must_use]
     pub const fn new(generator: T, sep: char, inline: bool) -> Self {
@@ -21,13 +24,15 @@ impl<T> PasswordHashPrinter<T> {
             generator,
             sep,
             inline,
+            _phantom: PhantomData,
         }
     }
 }
 
-impl<T> PasswordHashPrinter<T>
+impl<T, P> PasswordHashPrinter<T, P>
 where
-    T: Iterator<Item = Result<Psk, Error>>,
+    T: Iterator<Item = Result<Psk<P>, Error>>,
+    P: Display,
 {
     /// Generate PSKs for each MAC address in a list separated by whitespace.
     pub fn generate_list(&mut self, mac_list: FileOrStdin) -> ExitCode {

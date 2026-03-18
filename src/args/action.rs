@@ -40,12 +40,13 @@ impl Action {
     /// Run the specified action.
     #[must_use]
     pub fn run(self) -> ExitCode {
-        let Ok(phg) =
-            PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::try_from_rng(
-                &mut SysRng,
-            )
-            .inspect_err(|error| error!("{error}"))
-        else {
+        let Ok(phg) = PasswordHashGenerator::<
+            DEFAULT_KEY_SIZE,
+            ChaCha20Rng,
+            Argon2<'_>,
+            PasswordHash,
+        >::try_from_rng(&mut SysRng)
+        .inspect_err(|error| error!("{error}")) else {
             return ExitCode::FAILURE;
         };
 
