@@ -12,7 +12,6 @@ mod error;
 mod password_hash_generator;
 mod password_hash_printer;
 mod psk;
-mod validator;
 
 fn main() -> ExitCode {
     env_logger::init();

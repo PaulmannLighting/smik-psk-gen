@@ -1,6 +1,6 @@
 use std::process::ExitCode;
 
-use argon2::Argon2;
+use argon2::{Argon2, PasswordHash};
 use clap::Subcommand;
 use rand_chacha::ChaCha20Rng;
 
@@ -8,11 +8,12 @@ use self::target::Target;
 use crate::constants::DEFAULT_KEY_SIZE;
 use crate::password_hash_generator::PasswordHashGenerator;
 use crate::password_hash_printer::PasswordHashPrinter;
-use crate::validator::Validator;
+use crate::psk::Psk;
 
 mod target;
 
 /// Actions to perform.
+#[expect(clippy::large_enum_variant)]
 #[derive(Subcommand)]
 pub enum Action {
     /// Generate PSKs.
@@ -29,7 +30,7 @@ pub enum Action {
         #[clap(help = "The base64-encoded PSK to validate.")]
         psk: String,
         #[clap(help = "The Argon2 hash.")]
-        hash: String,
+        hash: PasswordHash,
     },
 }
 
@@ -37,22 +38,24 @@ impl Action {
     /// Run the specified action.
     #[must_use]
     pub fn run(self) -> ExitCode {
+        let phg = PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::default();
+
         match self {
             Self::Generate {
                 target,
                 sep,
                 inline,
             } => {
-                let mut printer =
-                    PasswordHashPrinter::<
-                        PasswordHashGenerator<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>,
-                    >::new(PasswordHashGenerator::default(), sep, inline);
+                let mut printer = PasswordHashPrinter::new(phg, sep, inline);
                 match target {
                     Target::List { mac_list } => printer.generate_list(mac_list),
                     Target::Amount { amount } => printer.generate_amount(amount),
                 }
             }
-            Self::Validate { psk, hash } => Argon2::default().validate(psk, &hash),
+            Self::Validate { psk, hash } => phg
+                .verify(&Psk::new(psk, hash))
+                .inspect_err(|error| eprintln!("{error}"))
+                .map_or(ExitCode::FAILURE, |()| ExitCode::SUCCESS),
         }
     }
 }
