@@ -2,6 +2,8 @@ use std::process::ExitCode;
 
 use argon2::{Argon2, PasswordHash};
 use clap::Subcommand;
+use log::error;
+use rand::rngs::SysRng;
 use rand_chacha::ChaCha20Rng;
 
 use self::target::Target;
@@ -38,7 +40,14 @@ impl Action {
     /// Run the specified action.
     #[must_use]
     pub fn run(self) -> ExitCode {
-        let phg = PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::default();
+        let Ok(phg) =
+            PasswordHashGenerator::<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'_>>::try_from_rng(
+                &mut SysRng,
+            )
+            .inspect_err(|error| error!("{error}"))
+        else {
+            return ExitCode::FAILURE;
+        };
 
         match self {
             Self::Generate {

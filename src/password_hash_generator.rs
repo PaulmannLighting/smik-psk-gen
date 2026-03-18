@@ -1,7 +1,7 @@
 use argon2::PasswordHash;
 use base64::Engine;
+use password_hash::rand_core::TryRng;
 use password_hash::{PasswordHasher, PasswordVerifier};
-use rand::rngs::SysRng;
 use rand::{CryptoRng, SeedableRng};
 
 use crate::constants::BASE64;
@@ -19,6 +19,20 @@ impl<const SIZE: usize, R, H> PasswordHashGenerator<SIZE, R, H> {
     #[must_use]
     pub const fn new(csprng: R, hasher: H) -> Self {
         Self { csprng, hasher }
+    }
+
+    /// Attempt to create a `PasswordHashGenerator` from a random number generator.
+    ///
+    /// # Errors
+    ///
+    /// Returns `<T as TryRng>::Error` if instantiating the RNG fails.
+    pub fn try_from_rng<T>(rng: &mut T) -> Result<Self, T::Error>
+    where
+        T: TryRng,
+        R: SeedableRng,
+        H: Default,
+    {
+        R::try_from_rng(rng).map(|csprng| Self::new(csprng, H::default()))
     }
 
     /// Generates a random key of the specified size.
@@ -56,19 +70,6 @@ impl<const SIZE: usize, R, H> PasswordHashGenerator<SIZE, R, H> {
         H: PasswordHasher<PasswordHash>,
     {
         self.hasher.hash_password_with_rng(&mut self.csprng, key)
-    }
-}
-
-impl<const SIZE: usize, R, H> Default for PasswordHashGenerator<SIZE, R, H>
-where
-    R: SeedableRng,
-    H: Default,
-{
-    fn default() -> Self {
-        Self::new(
-            R::try_from_rng(&mut SysRng).expect("Creating RNG from OS RNG should always succeed."),
-            H::default(),
-        )
     }
 }
 
