@@ -72,6 +72,12 @@ where
     }
 }
 
+/// Iterator to generate an infinite stream of PSKs.
+///
+/// # Errors
+///
+/// Since PSK generation may fail, this will actually yield a `Result<Psk, Error>`,
+/// which should be handled by the caller.
 impl<const SIZE: usize, R, H> Iterator for PasswordHashGenerator<SIZE, R, H>
 where
     R: CryptoRng,
