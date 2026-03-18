@@ -42,6 +42,7 @@ impl<const SIZE: usize, R, H, P> PasswordHashGenerator<SIZE, R, H, P> {
     }
 
     /// Generates a random key of the specified size.
+    #[must_use]
     pub fn generate(&mut self) -> [u8; SIZE]
     where
         R: CryptoRng,

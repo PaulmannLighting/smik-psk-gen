@@ -7,16 +7,19 @@ pub struct Psk<T> {
 
 impl<T> Psk<T> {
     /// Creates a new `Psk` instance.
+    #[must_use]
     pub(crate) const fn new(base64: String, hash: T) -> Self {
         Self { base64, hash }
     }
 
     /// Returns the plaintext password.
+    #[must_use]
     pub const fn base64(&self) -> &str {
         self.base64.as_str()
     }
 
     /// Returns the hashed password.
+    #[must_use]
     pub const fn hash(&self) -> &T {
         &self.hash
     }

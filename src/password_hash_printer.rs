@@ -35,6 +35,7 @@ where
     P: Display,
 {
     /// Generate PSKs for each MAC address in a list separated by whitespace.
+    #[must_use]
     pub fn generate_list(&mut self, mac_list: FileOrStdin) -> ExitCode {
         let Ok(mac_addresses) = mac_list.contents().inspect_err(|error| error!("{error}")) else {
             return ExitCode::FAILURE;
@@ -63,6 +64,7 @@ where
     }
 
     /// Generate a specified amount of PSKs.
+    #[must_use]
     pub fn generate_amount(&mut self, amount: usize) -> ExitCode {
         for result in (&mut self.generator).take(amount) {
             let Ok(psk) = result.inspect_err(|error| error!("{error}")) else {
