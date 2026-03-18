@@ -8,12 +8,11 @@ use log::error;
 use rand::rngs::SysRng;
 use rand_chacha::ChaCha20Rng;
 
-use self::args::Args;
+use self::args::{Action, Args, Target};
 use self::constants::DEFAULT_KEY_SIZE;
-use crate::args::{Action, Target};
-use crate::password_hash_generator::PasswordHashGenerator;
-use crate::password_hash_printer::PasswordHashPrinter;
-use crate::psk::Psk;
+use self::password_hash_generator::PasswordHashGenerator;
+use self::password_hash_printer::PasswordHashPrinter;
+use self::psk::Psk;
 
 mod args;
 mod constants;
