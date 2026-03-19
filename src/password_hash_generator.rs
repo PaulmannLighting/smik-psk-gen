@@ -96,7 +96,7 @@ where
         };
 
         #[expect(unsafe_code)]
-        // SAFETY: We calculated the correct hash for they above.
+        // SAFETY: We calculated the correct hash for the key above.
         Some(Ok(unsafe { Psk::new(key.into(), hash) }))
     }
 }
