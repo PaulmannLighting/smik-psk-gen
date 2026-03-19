@@ -10,10 +10,9 @@ use rand::rngs::SysRng;
 use rand_chacha::ChaCha20Rng;
 
 use self::args::{Action, Args, Target};
-use self::constants::DEFAULT_KEY_SIZE;
+use self::constants::{BASE64, DEFAULT_KEY_SIZE};
 use self::password_hash_generator::PasswordHashGenerator;
 use self::password_hash_printer::PasswordHashPrinter;
-use crate::constants::BASE64;
 
 mod args;
 mod constants;
