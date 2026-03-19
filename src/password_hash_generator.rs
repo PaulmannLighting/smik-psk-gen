@@ -41,7 +41,7 @@ impl<const SIZE: usize, R, H, P> PasswordHashGenerator<SIZE, R, H, P> {
         R::try_from_rng(rng).map(|csprng| Self::new(csprng, H::default()))
     }
 
-    /// Generates a random key of the specified size.
+    /// Generate a random key of the specified size.
     #[must_use]
     pub fn generate(&mut self) -> [u8; SIZE]
     where
