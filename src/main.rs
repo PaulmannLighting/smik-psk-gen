@@ -13,7 +13,6 @@ use self::args::{Action, Args, Target};
 use self::constants::DEFAULT_KEY_SIZE;
 use self::password_hash_generator::PasswordHashGenerator;
 use self::password_hash_printer::PasswordHashPrinter;
-use self::psk::Psk;
 use crate::constants::BASE64;
 
 mod args;
@@ -55,7 +54,7 @@ fn main() -> ExitCode {
                 return ExitCode::FAILURE;
             };
 
-            phg.verify(&Psk::new(key.into(), hash))
+            phg.verify(&key, &hash)
                 .inspect_err(|error| eprintln!("{error}"))
                 .map_or(ExitCode::FAILURE, |()| ExitCode::SUCCESS)
         }

@@ -54,11 +54,11 @@ impl<const SIZE: usize, R, H, P> PasswordHashGenerator<SIZE, R, H, P> {
     /// # Errors
     ///
     /// Returns a [`password_hash::Error`] if the password hash could not be verified.
-    pub fn verify(&self, psk: &Psk<P>) -> password_hash::Result<()>
+    pub fn verify(&self, key: &[u8], hash: &P) -> password_hash::Result<()>
     where
         H: PasswordVerifier<P>,
     {
-        self.hasher.verify_password(psk.key(), psk.hash())
+        self.hasher.verify_password(key, hash)
     }
 
     /// Hash the pre-shared key.
@@ -95,12 +95,8 @@ where
             Err(error) => return Some(Err(error)),
         };
 
-        let psk = Psk::new(key.into(), hash);
-
-        if let Err(error) = self.verify(&psk) {
-            return Some(Err(error));
-        }
-
-        Some(Ok(psk))
+        #[expect(unsafe_code)]
+        // SAFETY: We calculated the correct hash for they above.
+        Some(Ok(unsafe { Psk::new(key.into(), hash) }))
     }
 }
