@@ -7,6 +7,7 @@ use crate::constants::BASE64;
 
 /// A plain text key that can be decoded from base64.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[repr(transparent)]
 pub struct Base64Key(Box<[u8]>);
 
 impl Deref for Base64Key {
