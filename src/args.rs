@@ -2,6 +2,8 @@ use argon2::PasswordHash;
 use clap::{Parser, Subcommand};
 use clap_stdin::FileOrStdin;
 
+use crate::base64_key::Base64Key;
+
 /// Command line arguments.
 #[derive(Parser)]
 pub struct Args {
@@ -25,7 +27,7 @@ pub enum Action {
     /// Validate the generated PSKs
     Validate {
         #[clap(help = "The base64-encoded PSK to validate.")]
-        psk: String,
+        psk: Base64Key,
         #[clap(help = "The Argon2 hash.")]
         hash: PasswordHash,
     },

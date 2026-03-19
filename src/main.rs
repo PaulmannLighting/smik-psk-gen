@@ -3,18 +3,18 @@
 use std::process::ExitCode;
 
 use argon2::{Argon2, PasswordHash};
-use base64::Engine;
 use clap::Parser;
 use log::error;
 use rand::rngs::SysRng;
 use rand_chacha::ChaCha20Rng;
 
 use self::args::{Action, Args, Target};
-use self::constants::{BASE64, DEFAULT_KEY_SIZE};
+use self::constants::DEFAULT_KEY_SIZE;
 use self::password_hash_generator::PasswordHashGenerator;
 use self::password_hash_printer::PasswordHashPrinter;
 
 mod args;
+mod base64_key;
 mod constants;
 mod password_hash_generator;
 mod password_hash_printer;
@@ -45,14 +45,9 @@ fn main() -> ExitCode {
                 Target::Amount { amount } => printer.generate_amount(amount),
             }
         }
-        Action::Validate { psk, hash } => {
-            let Ok(key) = BASE64.decode(&psk).inspect_err(|error| error!("{error}")) else {
-                return ExitCode::FAILURE;
-            };
-
-            phg.verify(&key, &hash)
-                .inspect_err(|error| error!("{error}"))
-                .map_or(ExitCode::FAILURE, |()| ExitCode::SUCCESS)
-        }
+        Action::Validate { psk, hash } => phg
+            .verify(&psk, &hash)
+            .inspect_err(|error| error!("{error}"))
+            .map_or(ExitCode::FAILURE, |()| ExitCode::SUCCESS),
     }
 }
