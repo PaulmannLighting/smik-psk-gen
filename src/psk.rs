@@ -1,4 +1,4 @@
-use base64::{DecodeError, Engine};
+use base64::Engine;
 
 use crate::constants::BASE64;
 
@@ -18,18 +18,6 @@ impl<T> Psk<T> {
     #[must_use]
     pub const fn new(key: Box<[u8]>, hash: T) -> Self {
         Self { key, hash }
-    }
-
-    /// Create a new `Psk` from a base64 string.
-    ///
-    /// # Error
-    ///
-    /// Returns an error if the provided string is not valid base64.
-    pub fn try_from_base64_and_hash(key: &str, hash: T) -> Result<Self, DecodeError> {
-        BASE64
-            .decode(key)
-            .map(Vec::into_boxed_slice)
-            .map(|key| Self::new(key, hash))
     }
 
     /// Return the plain text key.
