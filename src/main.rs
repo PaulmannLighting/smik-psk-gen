@@ -47,15 +47,12 @@ fn main() -> ExitCode {
             }
         }
         Action::Validate { psk, hash } => {
-            let Ok(key) = BASE64
-                .decode(&psk)
-                .inspect_err(|error| eprintln!("{error}"))
-            else {
+            let Ok(key) = BASE64.decode(&psk).inspect_err(|error| error!("{error}")) else {
                 return ExitCode::FAILURE;
             };
 
             phg.verify(&key, &hash)
-                .inspect_err(|error| eprintln!("{error}"))
+                .inspect_err(|error| error!("{error}"))
                 .map_or(ExitCode::FAILURE, |()| ExitCode::SUCCESS)
         }
     }
