@@ -1,12 +1,9 @@
 use std::marker::PhantomData;
 
-use base64::Engine;
 use password_hash::rand_core::TryRng;
 use password_hash::{PasswordHasher, PasswordVerifier};
 use rand::{CryptoRng, SeedableRng};
 
-use crate::constants::BASE64;
-use crate::error::Error;
 use crate::psk::Psk;
 
 /// A password hash generator.
@@ -56,14 +53,12 @@ impl<const SIZE: usize, R, H, P> PasswordHashGenerator<SIZE, R, H, P> {
     ///
     /// # Errors
     ///
-    /// Returns an [`Error`] if the password hash could not be verified.
-    pub fn verify(&self, psk: &Psk<P>) -> Result<(), Error>
+    /// Returns a [`password_hash::Error`] if the password hash could not be verified.
+    pub fn verify(&self, psk: &Psk<P>) -> password_hash::Result<()>
     where
         H: PasswordVerifier<P>,
     {
-        Ok(self
-            .hasher
-            .verify_password(&BASE64.decode(psk.base64())?, psk.hash())?)
+        self.hasher.verify_password(psk.key(), psk.hash())
     }
 
     /// Hash the pre-shared key.
@@ -84,23 +79,23 @@ impl<const SIZE: usize, R, H, P> PasswordHashGenerator<SIZE, R, H, P> {
 ///
 /// # Errors
 ///
-/// Since PSK generation may fail, this will actually yield a `Result<Psk, Error>`,
-/// which should be handled by the caller.
+/// Since password hash generation may fail, this will actually yield a
+/// `password_hash::Result<Psk>`, which should be handled by the caller.
 impl<const SIZE: usize, R, H, P> Iterator for PasswordHashGenerator<SIZE, R, H, P>
 where
     R: CryptoRng,
     H: PasswordHasher<P> + PasswordVerifier<P>,
 {
-    type Item = Result<Psk<P>, Error>;
+    type Item = password_hash::Result<Psk<P>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let key = self.generate();
         let hash = match self.hash(&key) {
             Ok(hash) => hash,
-            Err(error) => return Some(Err(error.into())),
+            Err(error) => return Some(Err(error)),
         };
 
-        let psk = Psk::new(BASE64.encode(key), hash);
+        let psk = Psk::new(key.into(), hash);
 
         if let Err(error) = self.verify(&psk) {
             return Some(Err(error));

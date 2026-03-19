@@ -16,7 +16,6 @@ use self::psk::Psk;
 
 mod args;
 mod constants;
-mod error;
 mod password_hash_generator;
 mod password_hash_printer;
 mod psk;
@@ -46,9 +45,16 @@ fn main() -> ExitCode {
                 Target::Amount { amount } => printer.generate_amount(amount),
             }
         }
-        Action::Validate { psk, hash } => phg
-            .verify(&Psk::new(psk, hash))
-            .inspect_err(|error| eprintln!("{error}"))
-            .map_or(ExitCode::FAILURE, |()| ExitCode::SUCCESS),
+        Action::Validate { psk, hash } => {
+            let Ok(psk) =
+                Psk::try_from_base64_and_hash(&psk, hash).inspect_err(|error| eprintln!("{error}"))
+            else {
+                return ExitCode::FAILURE;
+            };
+
+            phg.verify(&psk)
+                .inspect_err(|error| eprintln!("{error}"))
+                .map_or(ExitCode::FAILURE, |()| ExitCode::SUCCESS)
+        }
     }
 }

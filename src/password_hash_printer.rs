@@ -5,7 +5,6 @@ use std::process::ExitCode;
 use clap_stdin::FileOrStdin;
 use log::error;
 
-use crate::error::Error;
 use crate::psk::Psk;
 
 /// Print generated passwords.
@@ -31,7 +30,7 @@ impl<T, P> PasswordHashPrinter<T, P> {
 
 impl<T, P> PasswordHashPrinter<T, P>
 where
-    T: Iterator<Item = Result<Psk<P>, Error>>,
+    T: Iterator<Item = password_hash::Result<Psk<P>>>,
     P: Display,
 {
     /// Generate PSKs for each MAC address in a list separated by whitespace.

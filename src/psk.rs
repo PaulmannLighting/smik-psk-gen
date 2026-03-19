@@ -1,26 +1,52 @@
-/// Pre-shared Key (PSK) consisting of the base64-encoded plain text and the hash.
+use base64::{DecodeError, Engine};
+
+use crate::constants::BASE64;
+
+/// Pre-shared Key (PSK) consisting of the plain text password and a password hash.
+///
+/// # Invariants
+///
+/// This structure does *not* guarantee, that the provided key and hash match.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Psk<T> {
-    base64: String,
+    key: Box<[u8]>,
     hash: T,
 }
 
 impl<T> Psk<T> {
     /// Creates a new `Psk` instance.
     #[must_use]
-    pub(crate) const fn new(base64: String, hash: T) -> Self {
-        Self { base64, hash }
+    pub const fn new(key: Box<[u8]>, hash: T) -> Self {
+        Self { key, hash }
     }
 
-    /// Returns the plaintext password.
+    /// Create a new `Psk` from a base64 string.
+    ///
+    /// # Error
+    ///
+    /// Returns an error if the provided string is not valid base64.
+    pub fn try_from_base64_and_hash(key: &str, hash: T) -> Result<Self, DecodeError> {
+        BASE64
+            .decode(key)
+            .map(Vec::into_boxed_slice)
+            .map(|key| Self::new(key, hash))
+    }
+
+    /// Return the plain text key.
     #[must_use]
-    pub const fn base64(&self) -> &str {
-        self.base64.as_str()
+    pub fn key(&self) -> &[u8] {
+        &self.key
     }
 
-    /// Returns the hashed password.
+    /// Return the password hash.
     #[must_use]
     pub const fn hash(&self) -> &T {
         &self.hash
+    }
+
+    /// Return the base64 encoding of the plain text password.
+    #[must_use]
+    pub fn base64(&self) -> String {
+        BASE64.encode(&self.key)
     }
 }
