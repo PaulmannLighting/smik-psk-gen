@@ -5,7 +5,7 @@ use base64::Engine;
 
 use crate::constants::BASE64;
 
-/// A plain text key.
+/// A plain text key that can be decoded from base64.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Base64Key(Box<[u8]>);
 
