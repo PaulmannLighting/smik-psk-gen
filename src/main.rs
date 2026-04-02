@@ -21,6 +21,9 @@ mod password_hash_generator;
 mod password_hash_printer;
 mod psk;
 
+type DefaultPhg<'key> =
+    PasswordHashGenerator<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'key>, PasswordHash>;
+
 fn main() -> ExitCode {
     env_logger::init();
 
@@ -30,13 +33,9 @@ fn main() -> ExitCode {
             sep,
             inline,
         } => {
-            let Ok(phg) = PasswordHashGenerator::<
-                DEFAULT_KEY_SIZE,
-                ChaCha20Rng,
-                Argon2<'_>,
-                PasswordHash,
-            >::try_from_rng(&mut SysRng)
-            .inspect_err(|error| error!("{error}")) else {
+            let Ok(phg) =
+                DefaultPhg::try_from_rng(&mut SysRng).inspect_err(|error| error!("{error}"))
+            else {
                 return ExitCode::FAILURE;
             };
 
