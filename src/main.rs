@@ -1,10 +1,9 @@
 //! Generate a PSK for each MAC address in a list.
 
-use std::process::ExitCode;
+use std::error::Error;
 
 use argon2::{Argon2, PasswordHash};
 use clap::Parser;
-use log::error;
 use password_hash::PasswordVerifier;
 use rand::rngs::SysRng;
 use rand_chacha::ChaCha20Rng;
@@ -24,22 +23,15 @@ mod psk;
 type DefaultPhg<'key> =
     PasswordHashGenerator<DEFAULT_KEY_SIZE, ChaCha20Rng, Argon2<'key>, PasswordHash>;
 
-fn main() -> ExitCode {
-    env_logger::init();
-
+fn main() -> Result<(), Box<dyn Error>> {
     match Args::parse().action {
         Action::Generate {
             target,
             sep,
             inline,
         } => {
-            let Ok(phg) =
-                DefaultPhg::try_from_rng(&mut SysRng).inspect_err(|error| error!("{error}"))
-            else {
-                return ExitCode::FAILURE;
-            };
-
-            let mut printer = PasswordHashPrinter::new(phg, sep, inline);
+            let mut printer =
+                PasswordHashPrinter::new(DefaultPhg::try_from_rng(&mut SysRng)?, sep, inline);
 
             match target {
                 Target::List { mac_list } => printer.generate_list(mac_list),
@@ -48,7 +40,6 @@ fn main() -> ExitCode {
         }
         Action::Validate { psk, hash } => Argon2::default()
             .verify_password(&psk, &hash)
-            .inspect_err(|error| error!("{error}"))
-            .map_or(ExitCode::FAILURE, |()| ExitCode::SUCCESS),
+            .map_err(Into::into),
     }
 }

@@ -1,9 +1,8 @@
+use std::error::Error;
 use std::fmt::Display;
 use std::marker::PhantomData;
-use std::process::ExitCode;
 
 use clap_stdin::FileOrStdin;
-use log::error;
 
 use crate::psk::Psk;
 
@@ -34,16 +33,13 @@ where
     P: Display,
 {
     /// Generate PSKs for each MAC address in a list separated by whitespace.
-    #[must_use]
-    pub fn generate_list(&mut self, mac_list: FileOrStdin) -> ExitCode {
-        let Ok(mac_addresses) = mac_list.contents().inspect_err(|error| error!("{error}")) else {
-            return ExitCode::FAILURE;
-        };
-
-        for (mac_address, result) in mac_addresses.split_whitespace().zip(&mut self.generator) {
-            let Ok(psk) = result.inspect_err(|error| error!("{error}")) else {
-                return ExitCode::FAILURE;
-            };
+    pub fn generate_list(&mut self, mac_list: FileOrStdin) -> Result<(), Box<dyn Error>> {
+        for (mac_address, result) in mac_list
+            .contents()?
+            .split_whitespace()
+            .zip(&mut self.generator)
+        {
+            let psk = result?;
 
             if self.inline {
                 println!(
@@ -59,16 +55,13 @@ where
             }
         }
 
-        ExitCode::SUCCESS
+        Ok(())
     }
 
     /// Generate a specified amount of PSKs.
-    #[must_use]
-    pub fn generate_amount(&mut self, amount: usize) -> ExitCode {
+    pub fn generate_amount(&mut self, amount: usize) -> Result<(), Box<dyn Error>> {
         for result in (&mut self.generator).take(amount) {
-            let Ok(psk) = result.inspect_err(|error| error!("{error}")) else {
-                return ExitCode::FAILURE;
-            };
+            let psk = result?;
 
             if self.inline {
                 println!("{}{}{}", psk.base64(), self.sep, psk.hash());
@@ -78,6 +71,6 @@ where
             }
         }
 
-        ExitCode::SUCCESS
+        Ok(())
     }
 }
