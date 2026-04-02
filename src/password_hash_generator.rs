@@ -49,18 +49,6 @@ impl<const SIZE: usize, R, H, P> PasswordHashGenerator<SIZE, R, H, P> {
         key
     }
 
-    /// Verify a password hash.
-    ///
-    /// # Errors
-    ///
-    /// Returns a [`password_hash::Error`] if the password hash could not be verified.
-    pub fn verify(&self, key: &[u8], hash: &P) -> password_hash::Result<()>
-    where
-        H: PasswordVerifier<P>,
-    {
-        self.hasher.verify_password(key, hash)
-    }
-
     /// Hash the pre-shared key.
     ///
     /// # Errors
