@@ -41,6 +41,18 @@ Industry-standard algorithm with memory-hard design. Unsafe code used for
 memory management and SIMD optimizations, all well-documented.
 """
 
+[[audits.argon2]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.6.0-rc.8 -> 0.6.0"
+notes = "AI-assisted source-diff review. Reviewed the release-candidate-to-release source and manifest diff. Hashing, memory filling, and parallel execution are unchanged; changes are documentation/lints, equivalent method syntax, the stable blake2 dependency, and a regression test for non-default output length. No new unsafe code or external side effects."
+
+[[audits.base64]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.22.1 -> 0.23.1"
+notes = "AI-assisted source-diff review. Reviewed custom padding-symbol validation and propagation through scalar, reader, writer, and chunked encoders, plus the complete new SIMD module. SIMD is a default feature, but existing general-purpose presets remain scalar. Checked sealed alphabet tables, CPU detection in safe constructors, vector load/store bounds, scalar tail/error handling, and AVX2/NEON lane layouts. A temporary release-mode host probe passed scalar/SIMD comparisons for standard/URL alphabets, padded/unpadded lengths 0..1024, output offsets 0..31 with exact buffers and sentinels, and all byte values at ten malformed-input boundaries. Foreign-target SIMD was inspected statically, not executed. No ambient I/O beyond caller-provided streams."
+
 [[audits.base64ct]]
 who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
@@ -62,11 +74,23 @@ Audited Blake2 cryptographic hash function from RustCrypto.
 Used internally by Argon2. Unsafe code for SIMD optimizations.
 """
 
+[[audits.blake2]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.11.0-rc.5 -> 0.11.0"
+notes = "AI-assisted source-diff review. Reviewed removal of the unused SIMD implementations and generic AsBytes trait, scalar vector operations, endian conversion, and output assembly. The remaining raw byte view covers a repr(C) vector of four homogeneous u32/u64 fields without padding and borrows for the source lifetime. Native rotations, wrapping additions, permutations, and copying the two output halves preserve the scalar algorithm. No added I/O or build execution."
+
 [[audits.block-buffer]]
 who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
 version = "0.12.0"
 notes = "Block buffer utilities from RustCrypto."
+
+[[audits.block-buffer]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.12.0 -> 0.12.1"
+notes = "AI-assisted source-diff review. Reviewed panic-safety changes to eager buffering, padding, and ReadBuffer::write_block. Reset guards restore the encoded position when callbacks unwind after buffer writes. Padding checks and pointer offsets remain within a block; the read-buffer guard is forgotten only immediately before the validated position update. Reviewed catch_unwind regressions and manifest changes. No new external capabilities."
 
 [[audits.chacha20]]
 who = "Security Audit 2026-04-02"
@@ -77,6 +101,12 @@ Audited ChaCha20 stream cipher from RustCrypto.
 Industry-standard cipher, unsafe code for SIMD optimizations.
 """
 
+[[audits.chacha20]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.10.0 -> 0.10.2"
+notes = "AI-assisted source-diff review. Reviewed SSE2 state load/store changes, NEON batching, constants, manifests, and regression tests. SSE2 removes an instruction requiring SSE4.1 and stores the final four words within the 16-word state. NEON cipher batching grows to eight blocks with matching counter lanes and bounded 64-byte output stores; the separate four-block RNG path remains consistent. Round operations and nonce/counter layout are preserved. Architecture-specific code was reviewed statically; no new I/O."
+
 [[audits.clap]]
 who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
@@ -86,6 +116,12 @@ Audited clap CLI argument parser by epage.
 Well-known and widely used CLI parsing library.
 Mozilla, ISRG, and Bytecode Alliance trust the publisher.
 """
+
+[[audits.clap]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "4.6.0 -> 4.6.6"
+notes = "AI-assisted source-diff review. Reviewed manifests, library changes, examples, documentation, and tests. Production changes select the separately audited clap_builder/clap_derive releases; this facade adds no parsing algorithm, unsafe code, or build-time side effect."
 
 [[audits.clap-stdin]]
 who = "Security Audit 2026-04-02"
@@ -99,11 +135,23 @@ criteria = "safe-to-deploy"
 version = "4.6.0"
 notes = "Clap builder component by trusted publisher epage."
 
+[[audits.clap_builder]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "4.6.0 -> 4.6.6"
+notes = "AI-assisted source-diff review. Reviewed conflict-field renaming and its uses, optional-value help formatting, alias display, the exposed usage accessor, and owned-string cleanups. Conflict and parsing behavior remains consistent with the renamed state; changes use checked safe Rust. No new unsafe code or external capabilities."
+
 [[audits.clap_derive]]
 who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
 version = "4.6.0"
 notes = "Clap derive macros by trusted publisher epage."
+
+[[audits.clap_derive]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "4.6.0 -> 4.6.4"
+notes = "AI-assisted source-diff review. Reviewed syn 3 migration, attribute expression parsing, generated bounds, and package metadata expansion. Literal strings are recognized through Expr::Lit validation; generated fully qualified env! expressions track the same CARGO_PKG_* metadata previously read by the macro. No new arbitrary build-time I/O or command execution; dependency audits are handled separately."
 
 [[audits.clap_lex]]
 who = "Security Audit 2026-04-02"
@@ -117,6 +165,12 @@ criteria = "safe-to-deploy"
 version = "0.5.2"
 notes = "Constant-time conditional move from RustCrypto."
 
+[[audits.cmov]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.5.2 -> 0.5.4"
+notes = "AI-assisted source-diff review. Reviewed all implementation changes, including AArch64 inline assembly and pointer-sized/nonzero implementations. AArch64 tests mask conditions to their defined low 8/16 bits, avoiding reliance on unspecified upper register bits without introducing data-dependent branches. Register constraints preserve live inputs. Slice casts preserve element size/alignment; selecting between valid nonzero values preserves validity. Miri uses the portable implementation. Target assembly was statically reviewed, not executed."
+
 [[audits.colorchoice]]
 who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
@@ -129,11 +183,23 @@ criteria = "safe-to-deploy"
 version = "0.3.0"
 notes = "CPU feature detection for SIMD optimizations."
 
+[[audits.cpufeatures]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.3.0 -> 0.3.1"
+notes = "AI-assisted source-diff review. Reviewed runtime dispatch and Miri cfg changes. AVX detection now requires the YMM state bit; Miri uses compile-time target-feature detection. The u8 sentinel spelling is equivalent. No new unsafe operations or external capabilities."
+
 [[audits.crypto-common]]
 who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
 version = "0.2.1"
 notes = "Common cryptographic utilities from RustCrypto."
+
+[[audits.crypto-common]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.2.1 -> 0.2.2"
+notes = "AI-assisted source-diff review. Reviewed the new SetIvState trait and IV save/restore helper. The helper saves the IV, invokes the supplied closure, and restores it on normal return; it does not promise restoration during unwinding. Existing crypto primitives are unchanged. No new unsafe code, dependencies, or I/O."
 
 [[audits.ctutils]]
 who = "Security Audit 2026-04-02"
@@ -141,11 +207,23 @@ criteria = "safe-to-deploy"
 version = "0.4.0"
 notes = "Constant-time utilities from RustCrypto."
 
+[[audits.ctutils]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.4.0 -> 0.4.2"
+notes = "AI-assisted source-diff review. Reviewed pointer-sized signed/unsigned and nonzero constant-time trait implementations, their cmov delegation, wrapping arithmetic, tests, and documentation changes. The crate continues to forbid unsafe code. No new external capabilities; cmov is audited separately."
+
 [[audits.digest]]
 who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
 version = "0.11.2"
 notes = "Digest traits from RustCrypto."
+
+[[audits.digest]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.11.2 -> 0.11.3"
+notes = "AI-assisted source-diff review. Reviewed TryCustomizedInit and its blanket infallible adapter, along with the initialized-MAC test helper split. Trait behavior and error conversion are explicit; the test refactor preserves existing checks. No new unsafe code or runtime I/O."
 
 [[audits.getrandom]]
 who = "Security Audit 2026-04-02"
@@ -155,6 +233,12 @@ notes = """
 Audited OS random number source. Platform-specific entropy gathering
 from OS APIs. Unsafe code necessary for OS FFI calls.
 """
+
+[[audits.getrandom]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.4.2 -> 0.4.3"
+notes = "AI-assisted source-diff review. Reviewed replacement of generated WASI dependencies with direct get-random-u64 imports for the WASI 0.2/0.3 module names and wasm-family cfg expansion. The import returns a scalar without buffer-pointer FFI; existing fill logic and JavaScript chunk limits remain unchanged. Component type/link metadata still depends on the surrounding WASI runtime. Foreign targets were statically inspected, not executed. No weaker entropy fallback or new ambient capability."
 
 [[audits.hashbrown]]
 who = "Security Audit 2026-04-02"
@@ -173,6 +257,12 @@ who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
 version = "0.4.10"
 notes = "Hybrid array implementation from RustCrypto."
+
+[[audits.hybrid-array]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.4.10 -> 0.4.15"
+notes = "AI-assisted source-diff review. Reviewed collection conversions, size additions, manifests, and tests. Vec/Box conversions check length then move elements rather than cloning; invalid lengths consistently return errors. Added sizes use the existing array-size representation. No new unsafe blocks, I/O, or build execution."
 
 [[audits.id-arena]]
 who = "Security Audit 2026-04-02"
@@ -198,6 +288,12 @@ criteria = "safe-to-deploy"
 version = "0.2.184"
 notes = "Standard FFI bindings to C library."
 
+[[audits.libc]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.2.184 -> 0.2.189"
+notes = "AI-assisted source-diff review. Reviewed source/manifests/build-script changes, ABI-relevant declaration diffs, and changed helper bodies, separating moved UAPI definitions from behavioral changes. Checked explicit safe/unsafe macro expansion, opaque-type markers, one-byte integer slice casts, ioctl arithmetic, mutex initializer offsets, and time64 layout/link-name cfg separation. Platform additions remain unsafe foreign declarations; helper rewrites largely replace equivalent casts/nulls/initialization. Build probes retain their existing rustc/FreeBSD/Emscripten scope. QURT/QNX and other foreign ABI changes received static review, not exhaustive validation against target headers or execution. No unexpected runtime I/O or new safe raw-pointer dereferences were found."
+
 [[audits.memchr]]
 who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
@@ -222,6 +318,12 @@ notes = """
 Audited password hashing traits and utilities from RustCrypto.
 Core infrastructure used by argon2. Minimal unsafe code, all justified.
 """
+
+[[audits.password-hash]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.6.0 -> 0.6.1"
+notes = "AI-assisted source-diff review. Reviewed the complete delta. PasswordVerifier's blanket implementation converts parameters from the full PHC PasswordHash instead of only its params, allowing output-length information to participate. Hash comparison is unchanged. No new unsafe code or I/O."
 
 [[audits.phc]]
 who = "Security Audit 2026-04-02"
@@ -250,6 +352,12 @@ Audited general-purpose RNG library from rust-random.
 Provides RNG traits and utilities.
 """
 
+[[audits.rand]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.10.0 -> 0.10.2"
+notes = "AI-assisted source-diff review of both 0.10.0 -> 0.10.1 and 0.10.1 -> 0.10.2. The first delta removes logging callbacks from ThreadRng reseeding, preventing logger reentrancy into its mutable state, and panics on entropy failure instead of logging and continuing. Checked removal of the log dependency and unchanged reseeding state updates. Reviewed the source and manifest delta. Slice sampling replaces unchecked indexing with checked access, and UniformChar replaces unchecked char construction with validation. Serde sampler range validation is added; malformed state can fail safely rather than produce an invalid char. The helper uses wrapping range arithmetic; shuffle changes are naming/documentation/must_use only. RNG algorithms and entropy acquisition are unchanged. No new unsafe code or capabilities."
+
 [[audits.rand_chacha]]
 who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
@@ -258,6 +366,12 @@ notes = """
 Audited ChaCha20-based CSPRNG from rust-random.
 Industry-standard CSPRNG with minimal unsafe code.
 """
+
+[[audits.rand_core]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.10.0 -> 0.10.1"
+notes = "AI-assisted source-diff review. Reviewed the complete delta: package/changelog changes and documentation links from Rng to RngExt. Runtime code, trait behavior, and dependencies are unchanged."
 
 [[audits.semver]]
 who = "Security Audit 2026-04-02"
@@ -270,6 +384,12 @@ who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
 version = "1.19.0"
 notes = "Type-level numbers for const generics."
+
+[[audits.typenum]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "1.19.0 -> 1.20.1"
+notes = "AI-assisted source-diff review. Reviewed the new safe tuple indexing implementation through twelve fields, hygienic tarr macro qualification, and removal of build.rs. Generated arithmetic tests are now checked-in test code; production numeric constants are not newly generated at build time. No unsafe code or new dependencies/external capabilities."
 
 [[audits.wasip2]]
 who = "Security Audit 2026-04-02"
@@ -295,11 +415,23 @@ criteria = "safe-to-deploy"
 version = "0.8.48"
 notes = "Zero-copy parsing library. Used by ppv-lite86."
 
+[[audits.zerocopy]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.8.48 -> 0.8.57"
+notes = "AI-assisted source-diff review. Reviewed pointer, allocation/layout, transmute, trait, and build-script changes. Failed checked transmutes retain original source storage via ReadOnly/ManuallyDrop instead of moving through destination padding; success reads the validated destination once. Ptr iteration consumes the pointer to preserve exclusive aliasing. Trailing-slice limits account for alignment, isize::MAX, and zero-sized elements before unchecked layout construction. Identity and qualified metadata calls support the separately reviewed derives. Build changes add cfg declarations only. Foreign layout cases were statically reviewed; no unexpected I/O or execution."
+
 [[audits.zerocopy-derive]]
 who = "Security Audit 2026-04-02"
 criteria = "safe-to-deploy"
 version = "0.8.48"
 notes = "Derive macros for zerocopy."
+
+[[audits.zerocopy-derive]]
+who = "AI-assisted review (OpenAI Codex)"
+criteria = "safe-to-deploy"
+delta = "0.8.48 -> 0.8.57"
+notes = "AI-assisted source-diff review. Reviewed repr(C) homogeneous generic IntoBytes derivation, emitted bounds, pointer metadata calls, crate-path parsing, and best-effort multi-derive behavior. Homogeneous T/array/trailing-slice fields require identity bounds and reject increased alignment, preserving the no-padding argument and syntax hygiene. Metadata calls are trait-qualified; conditional derives retain their validity bounds. Path parsing rejects invalid forms. No new runtime capabilities or build-time command execution."
 
 [[trusted.anyhow]]
 criteria = "safe-to-deploy"
